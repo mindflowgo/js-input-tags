@@ -1,1 +1,1 @@
-dist/js-input-tags.min.js
+dist/index.min.js
