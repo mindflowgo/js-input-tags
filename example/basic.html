@@ -25,7 +25,9 @@
         </div>
             
         <div class="mb-3">
-            <p class="mb-2">List results: <strong><span id="tagsData"></span></strong></p>
+            <p class="mb-2">List results: <strong>
+            <input type="text" id="tagsOutput" spellcheck="false" placeholder="(empty)" style="color: grey; border:0px;" />
+            </p> 
             <div class="mt-5 d-grid gap-2 d-md-flex justify-content-md-start">
                 <button class="btn btn-secondary ms-md-2" onClick="btnAddTag('hello')">Add Tag 'hello'</button>
             </div>
@@ -34,24 +36,18 @@
 
      <!--Simple tags input implementation-->
      <script type="module">
-        import InputTags from "https://unpkg.com/js-input-tags@latest"
+     import InputTags from "https://unpkg.com/js-input-tags@latest"
 
-        function displayTags( _tags ){
-            console.log( `[displayTags] called, with tags: ${_tags}` );
-            document.querySelector('#tagsData').innerHTML = _tags;
-        }
+    function btnAddTag( _tag ){
+        inputTags.addTag(_tag);
+    }
 
-        function btnAddTag( _tag ){
-            inputTags.addTag(_tag);
-        }
+    const inputTags = new InputTags({ 
+        inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput", unique: true
+    });
 
-        const inputTags = new InputTags({ 
-			inputId: "tagsInput", listId: "tagsList",
-			unique: true, updateFn: displayTags,
-		});
-
-        // export module functions for DOM
-        window.btnAddTag = btnAddTag;
+    // export module functions for DOM
+    window.btnAddTag = btnAddTag;
      </script>
 </body>
 </html>

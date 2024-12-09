@@ -27,7 +27,7 @@
             <p class="mb-2">List results: <strong><span id="tagsData"></span></strong></p>
             <div class="mt-5 d-grid gap-2 d-md-flex">
                 <button class="btn btn-secondary ms-md-2" onClick="btnAddTag('hello')">Add Tag 'hello'</button>
-                <button class="btn btn-secondary ms-md-2" onClick="_tagAction('autocomplete','tagsList','uni')">Show AutoComplete (for 'uni')</button>
+                <button class="btn btn-secondary ms-md-2" onClick="showList('uni')">Show AutoComplete (for 'uni')</button>
             </div>
         </div>
         
@@ -36,6 +36,7 @@
 
      <!--Simple tags input implementation-->
      <script type="module">
+        // import InputTags from "./index.js"
         import InputTags from "https://unpkg.com/js-input-tags@latest"
 
         function displayTags( _tags ){
@@ -44,12 +45,16 @@
         }
 
         function btnAddTag( _tag ){
-            inputTags.addTag(_tag);
+            myTags.addTag(_tag);
+        }
+
+        function showList( _tags ){
+            myTags.toggleAutoComplete(_tags);
         }
 
         const defaultTags = ['default','tags'];
 
-        const inputTags = new InputTags({ 
+        const myTags = new InputTags({ 
 			inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput",
 			tags: defaultTags, specialKeys: true, delimiter: ';', 
             afterUpdate: displayTags,
@@ -60,6 +65,7 @@
 
         // export module functions for DOM
         window.btnAddTag = btnAddTag;
+        window.showList = showList;
      </script>
 </body>
 </html>

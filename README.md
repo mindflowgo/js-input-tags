@@ -27,7 +27,8 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 *With a valid InputTags() instance you have these methods:*
 - **getTags()**: get the list of tags created (these will be reflected in outputId element if linked)
 - **addTag(tag)**: add a new tag to input tags instance
-- **removeTag(itemID)**: remove a tag, using it's unique id
+- **removeTag(elementID)**: remove a tag, using it's unique id
+- **toggleAutoComplete(query)**: toggle showing autoComplete with matches for the query
 - **destroy()**: remove the instance
 There are a few other methods but they a better only used internally.
 
@@ -166,7 +167,7 @@ That's it!
     }
 
     function btnAddTag( _tag ){
-        inputTags.addTag(_tag);
+        myTags.addTag(_tag);
     }
 
     // export module functions for DOM
@@ -176,12 +177,19 @@ That's it!
 ### Advanced Ideas
 *afterUpdate*: You can postprocess after changes and change how it saves to output field, ex.
 ```javascript
-    const inputTags = new InputTags({ 
+    const myTags = new InputTags({ 
         inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput",
         afterUpdate: function(outputVal){ let tags = outputVal.split(this.delimiter); tags.unshift("Prepend"); this.writeTagOutput(tags); }
     });
 ```
 - *AutoComplete*: Triggering display of autocomplete: see example/advanced.html "Show AutoComplete" button.
 ```html
-    <button onClick="_tagAction('autocomplete','tagsList','uni')">Show AutoComplete List</button>
+    <button onClick="showList('uni')">Show AutoComplete List</button>
+```
+```javascript
+    function showList( tags ){
+        myTags.toggleAutoComplete(tags);
+    }
+    // show script-module functions in acctual DOM
+    window.showList = showList;
 ```
