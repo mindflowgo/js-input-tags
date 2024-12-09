@@ -231,13 +231,6 @@ export default class InputTags {
 
         } else if (action == 'remove'){
             this.removeTag(elementID);
-        
-        } else if (action == 'autocomplete'){
-            if( !this.searchListEl ) return;
-            if( this.searchListEl.style.display == 'none' )
-                this.handleAutoCompleteList(e,tags)
-            else
-                this.searchListEl.style.display = 'none';
         }
     }
 
