@@ -1,0 +1,1 @@
+dist/js-input-tags.min.js
