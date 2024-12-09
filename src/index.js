@@ -74,6 +74,22 @@ export default class InputTags {
         }
     }
 
+    // undo all the Input-Tags changes
+    destroy() {
+        this.inputEl.removeEventListener(this.specialKeys ? "keydown" : "keyup", this.handleInput);
+        document.removeEventListener(`__${this.listID}_`, this.handleTagEvent);
+        this.listEl.classList.remove("tagsList");
+        this.listEl.innerHTML = '';
+        if (this.searchItems.length > 0) {
+            this.inputEl.removeEventListener("keyup", this.handleAutoCompleteList);
+            if (this.searchListEl) this.searchListEl.remove();
+        }
+        this.inputEl = null;
+        this.listEl = null;
+        this.outputEl = null;
+        this.searchListEl = null;
+    }
+    
     createAutoCompleteElement() {
         // create search list `ul` element and set to `this.searchListEl`
         const elName = this.listID + '_autocomplete';

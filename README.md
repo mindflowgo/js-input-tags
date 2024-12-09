@@ -20,6 +20,14 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 - **specialKeys**: enable tracking special keys (*Boolean*)
 - **autocompleteList**: autocomplete list suggestions (*Array*)
 
+## Methods
+*With a valid InputTags() instance you have these methods:*
+- **getTags()**: get the list of tags created (these will be reflected in outputId element if linked)
+- **addTag(tag)**: add a new tag to input tags instance
+- **removeTag(itemID)**: remove a tag, using it's unique id
+- **destroy**: remove the instance
+There are a few other methods but they a better only used internally.
+
 ## Usage
 There are 3 steps to using it
 1. Include the CSS & JS files (importing it into a script type=module)
