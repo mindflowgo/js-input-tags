@@ -173,3 +173,15 @@ That's it!
     window.btnAddTag = btnAddTag;
 ```
 
+### Advanced Ideas
+*afterUpdate*: You can postprocess after changes and change how it saves to output field, ex.
+```javascript
+    const inputTags = new InputTags({ 
+        inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput",
+        afterUpdate: function(outputVal){ let tags = outputVal.split(this.delimiter); tags.unshift("Prepend"); this.writeTagOutput(tags); }
+    });
+```
+- *AutoComplete*: Triggering display of autocomplete: see example/advanced.html "Show AutoComplete" button.
+```javascript
+    <button onClick="_tagAction('autocomplete','tagsList','uni')">Show AutoComplete List</button>
+```

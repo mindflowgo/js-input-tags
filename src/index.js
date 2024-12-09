@@ -46,7 +46,7 @@ export default class InputTags {
         Object.assign(this, settings);
 
         // initialize plugin
-        try {
+        // try {
             this.inputEl = document.getElementById(inputId);
             this.listEl = document.getElementById(listId);
             if (this.inputEl.tagName != "INPUT" || this.listEl.tagName != "UL") {
@@ -69,9 +69,9 @@ export default class InputTags {
             if( tags && tags.length>0 )
                 tags.forEach( tag => this.addTag(tag) );
 
-        } catch (e) {
-            throw new Error("TagsInput: failed setup, quitting.");
-        }
+        // } catch (e) {
+        //     throw new Error("TagsInput: failed setup, quitting.");
+        // }
     }
 
     // undo all the Input-Tags changes
@@ -90,21 +90,18 @@ export default class InputTags {
         this.searchListEl = null;
     }
     
-    createAutoCompleteElement() {
-        // create search list `ul` element and set to `this.searchListEl`
-        const elName = this.listID + '_autocomplete';
-        const el = `<ul id='${elName}' class='tagsAutocompleteList' style='display: none'></ul>`;
-        this.inputEl.insertAdjacentHTML("afterend", el);
-        this.searchListEl = document.getElementById(elName);
-    }
-
-    saveOutput(){
+    // if adjustment to tag set needed, pass that in.
+    writeTagOutput(_tags=[]){
         // output to a specified input field (ex. hidden) (if given)
-        const outputData = this.tags.filter(_tag => _tag !== '').join(this.delimiter);
-        
-        if( this.outputEl  ) this.outputEl.value = outputData;
-        // calling specified function with tag output (if given)
-        if( this.afterUpdate ) this.afterUpdate(outputData);
+        if( _tags.length>0 ){
+            if( this.outputEl  ) this.outputEl.value = _tags.filter(_tag => _tag !== '').join(this.delimiter);            
+        } else {
+            const outputData = this.tags.filter(_tag => _tag !== '').join(this.delimiter);
+            
+            if( this.outputEl  ) this.outputEl.value = outputData;
+            // calling specified function with tag output (if given)
+            if( this.afterUpdate ) this.afterUpdate(outputData);
+        }
     }
 
     encodeHTMLEntities(text) {
@@ -128,31 +125,26 @@ export default class InputTags {
             if( tag != '' && (!this.unique || !this.tags.includes(tag)) ){
                 this.tags.push(tag);
                 this.tagCnt++; // each new entry new cnt, so always unique
-                const itemID = this.listID + '_' + this.tagCnt;
+                const elementID = this.listID + '_' + this.tagCnt;
                 // htmlEntities on html; and escape ' for data-item in case messages structure
-                _html += `<li id='${itemID}' data-item='${this.escapeQuotes(tag)}'>${this.encodeHTMLEntities(tag)} `
-                        +`<span onclick="_tagAction('remove','${this.listID}','${itemID}')">X</span></li>`;
+                _html += `<li id='${elementID}' data-item='${this.escapeQuotes(tag)}'>${this.encodeHTMLEntities(tag)} `
+                        +`<span onclick="_tagAction('remove','${this.listID}','','${elementID}')">X</span></li>`;
             }
         });
         this.listEl.innerHTML += _html;
-        this.saveOutput();
+        this.writeTagOutput();
     }
 
-    suggestTag(tagArray) {
-        const _html = tagArray.map(tag => `<li onclick="_tagAction('add','${this.listID}','','${this.escapeQuotes(tag,true)}')">${this.encodeHTMLEntities(tag)}</li>` ).join('');
-        return _html;
-    }
-
-    removeTag(itemID) {
+    removeTag(elementID) {
         // as tag-data may not be unique, we use the unique-DOM-id created for entry
-        const itemEl = document.getElementById(itemID);
+        const itemEl = document.getElementById(elementID);
         if( !itemEl ) return;
         itemEl.remove();
 
         // now refresh tags based on actual DOM elements present
         this.tags = [];
         document.querySelectorAll(`#${this.listID} LI`).forEach(el =>{ if( el.dataset.item ) this.tags.push(el.dataset.item); });
-        this.saveOutput();
+        this.writeTagOutput();
     }
 
     handleInput(e) {
@@ -228,9 +220,39 @@ export default class InputTags {
         }
     }
 
-    handleAutoCompleteList(e) {
+    handleTagEvent(e) {
+        // Handles outside plugin tasks (add/remove tag via event listener)
+        const { action, tags, elementID }= e.detail;
+        if (action == 'add'){
+            this.addTag(tags);
+            this.inputEl.value = '';
+            this.inputEl.focus();
+            if( this.searchListEl ) this.searchListEl.style.display = 'none';
+
+        } else if (action == 'remove'){
+            this.removeTag(elementID);
+        
+        } else if (action == 'autocomplete'){
+            if( !this.searchListEl ) return;
+            if( this.searchListEl.style.display == 'none' )
+                this.handleAutoCompleteList(e,tags)
+            else
+                this.searchListEl.style.display = 'none';
+        }
+    }
+
+    // == AUTOCOMPLETE CODE ========================================
+    createAutoCompleteElement() {
+        // create search list `ul` element and set to `this.searchListEl`
+        const elName = this.listID + '_autocomplete';
+        const el = `<ul id='${elName}' class='tagsAutocompleteList' style='display: none'></ul>`;
+        this.inputEl.insertAdjacentHTML("afterend", el);
+        this.searchListEl = document.getElementById(elName);
+    }
+
+    handleAutoCompleteList(e, _q='') {
         // on keyup so after key actions complete
-        const q = e.target.value.trim();
+        const q = _q || e.target.value.trim();
         let results = [];
         if( q.length>1 ){
             results = this.searchItems.filter(item => item.toLowerCase().indexOf(q.toLowerCase()) != -1);
@@ -240,29 +262,21 @@ export default class InputTags {
         }
         this.searchListEl.style.display =( q.length>1 && results.length>0 ? 'block' : 'none' );
     }
-
-    handleTagEvent(e) {
-        // Handles outside plugin tasks (add/remove tag via event listener)
-        const { action, itemID, tags }= e.detail;
-        if (action == 'add'){
-            this.addTag(tags);
-            this.inputEl.value = '';
-            this.inputEl.focus();
-
-        } else if (action == 'remove'){
-            this.removeTag(itemID);
-        }
-        if( this.searchListEl ) this.searchListEl.style.display = 'none';
+    
+    suggestTag(tagArray) {
+        const _html = tagArray.map(tag => `<li onclick="_tagAction('add','${this.listID}','${this.escapeQuotes(tag,true)}')">${this.encodeHTMLEntities(tag)}</li>` ).join('');
+        return _html;
     }
+
 } // END of class: TagsInput
 
 
 // DOM accessible function (injected into HTML)
-function _tagAction(action, listID, itemID, tags=[]) {
+function _tagAction(action, listID, tags=[], elementID='') {
     let eventDetails = {
         bubbles: true, 
         cancelable: true, 
-        detail: { action, itemID, tags }
+        detail: { action, tags, elementID }
     };
     const event = new CustomEvent(`__${listID}_`, eventDetails);
     document.dispatchEvent(event);

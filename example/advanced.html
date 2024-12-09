@@ -25,10 +25,13 @@
             
         <div class="mb-3">
             <p class="mb-2">List results: <strong><span id="tagsData"></span></strong></p>
-            <div class="mt-5 d-grid gap-2 d-md-flex justify-content-md-start">
+            <div class="mt-5 d-grid gap-2 d-md-flex">
                 <button class="btn btn-secondary ms-md-2" onClick="btnAddTag('hello')">Add Tag 'hello'</button>
+                <button class="btn btn-secondary ms-md-2" onClick="_tagAction('autocomplete','tagsList','uni')">Show AutoComplete (for 'uni')</button>
             </div>
         </div>
+        
+        <input type="text" id="tagsOutput" class="form-control mt-2" spellcheck="false" placeholder="Enter a tag" />
     </div>
 
      <!--Simple tags input implementation-->
@@ -44,9 +47,14 @@
             inputTags.addTag(_tag);
         }
 
+        const defaultTags = ['default','tags'];
+
         const inputTags = new InputTags({ 
-			inputId: "tagsInput", listId: "tagsList",
-			tags: ['default','tags'], specialKeys: true, delimiter: ';', updateFn: displayTags,
+			inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput",
+			tags: defaultTags, specialKeys: true, delimiter: ';', 
+            afterUpdate: displayTags,
+            // pro-actively process the tags to change format
+            // afterUpdate: function(outputVal){ let tags = outputVal.split(this.delimiter); tags.unshift("Prepend"); this.writeTagOutput(tags); displayTags(tags); },
 			autocompleteList: [ "Canada", "India", "Sri Lanka", "United States", "United 'UK' Kingdom", "Vietnam", "Zimbabwe"]
 		});
 
