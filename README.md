@@ -45,11 +45,11 @@ That's it!
 #### Step 1 - Include Files (change path to match where they are)
 ```html
     <head>
-        <link rel="stylesheet" href="input-tags.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/js-input-tags@latest/style.css">
     </head>
 
     <script type="module">
-    import InputTags from "input-tags.min.js"
+    import InputTags from "https://unpkg.com/js-input-tags@latest"
     </script>
 ```
 
@@ -79,7 +79,7 @@ That's it!
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     
     <!-- Only CSS used by InputTags -->
-    <link rel="stylesheet" href="../src/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/js-input-tags@latest/style.css">
 </head>
 
 <body>
@@ -105,7 +105,7 @@ That's it!
 
      <!--Simple tags input implementation-->
      <script type="module">
-        import InputTags from "../src/index.js"
+        import InputTags from "https://unpkg.com/js-input-tags@latest"
 
         function displayTags( _tags ){
             console.log( `[displayTags] called, with tags: ${_tags}` );
@@ -134,11 +134,11 @@ That's it!
 #### Step 1 - Include Files (change path to match where they are)
 ```html
     <head>
-        <link rel="stylesheet" href="../src/style.css">
+        <link rel="stylesheet" href="https://unpkg.com/js-input-tags@latest/style.css">
     </head>
 
     <script type="module">
-    import InputTags from "../src/index.js"
+    import InputTags from "https://unpkg.com/js-input-tags@latest"
     </script>
 ```
 
@@ -157,7 +157,7 @@ That's it!
 ```javascript
     const inputTags = new InputTags({ 
         inputId: "tagsInput", listId: "tagsList",
-        tags: ['default','tags'], specialKeys: true, delimiter: ';', updateFn: displayTags,
+        tags: ['default','tags'], specialKeys: true, delimiter: ';', afterUpdate: displayTags,
         autocompleteList: [ "Canada", "India", "Sri Lanka", "United States", "United 'UK' Kingdom", "Vietnam", "Zimbabwe"]
     });
 
