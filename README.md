@@ -28,7 +28,7 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 - **getTags()**: get the list of tags created (these will be reflected in outputId element if linked)
 - **addTag(tag)**: add a new tag to input tags instance
 - **removeTag(itemID)**: remove a tag, using it's unique id
-- **destroy**: remove the instance
+- **destroy()**: remove the instance
 There are a few other methods but they a better only used internally.
 
 ## Usage
@@ -118,7 +118,7 @@ That's it!
 
         const inputTags = new InputTags({ 
 			inputId: "tagsInput", listId: "tagsList",
-			unique: true, updateFn: displayTags,
+			unique: true, afterUpdate: displayTags,
 		});
 
         // export module functions for DOM
