@@ -8,6 +8,8 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 ## Demo
 ![demonstration](./example/media/autocomplete.gif)
 
+![special-keys](./example/media/special-keys.gif)
+
 ## Options
 *Only required tags are inputId and listId*
 - **tags**: can pre-populate tags (*Array*)
