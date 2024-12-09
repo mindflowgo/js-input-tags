@@ -6,6 +6,7 @@
 Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://github.com/rk4bir/simple-tags-input); using his idea and CSS but then rewritten for ES6 and more features. Can record special keys (Meta, Alt, Tab, etc) as key presses.
 
 ## Demo
+*(Go to my github repo to see the demos, this readme does't show them on other locations)*
 ![demonstration](./example/media/autocomplete.gif)
 
 ![special-keys](./example/media/special-keys.gif)
