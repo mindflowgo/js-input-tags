@@ -182,6 +182,6 @@ That's it!
     });
 ```
 - *AutoComplete*: Triggering display of autocomplete: see example/advanced.html "Show AutoComplete" button.
-```javascript
+```html
     <button onClick="_tagAction('autocomplete','tagsList','uni')">Show AutoComplete List</button>
 ```
