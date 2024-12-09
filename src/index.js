@@ -16,7 +16,7 @@
  * 
  * const inputTags = new InputTags({ 
  *    listId: "tagsList", inputId: "tagsInput", outputId: "saveInput",  // DOM elements to attach to
- *    updateFn: mySave                                                  // Pass in function to call with updated tag items
+ *    afterUpdate: mySave                                                  // Pass in function to call with updated tag items
  *    specialKeys: true, delimiter: ';',                                // To record special keys (ex. arrow, etc)
  *    tags: ['first','second'], unique: false, 
  *    autocompleteList: [ "One", "Two", "AutoSelect3", "AutoSelect4"]
@@ -27,7 +27,7 @@
  */
 export default class InputTags {
     constructor(props) {
-        const { tags, unique, delimiter, specialKeys, updateFn, inputId, listId, outputId, autocompleteList }= props;
+        const { tags, unique, delimiter, specialKeys, afterUpdate, inputId, listId, outputId, autocompleteList }= props;
 
         const settings = {
             tagCnt: 0,
@@ -35,7 +35,7 @@ export default class InputTags {
             unique: unique || false,
             delimiter: delimiter || ',',
             specialKeys: specialKeys || false,
-            updateFn: updateFn || undefined,
+            afterUpdate: afterUpdate || undefined,
             searchItems: autocompleteList || [],
             listID: listId,
             listEl: null,
@@ -104,7 +104,7 @@ export default class InputTags {
         
         if( this.outputEl  ) this.outputEl.value = outputData;
         // calling specified function with tag output (if given)
-        if( this.updateFn ) this.updateFn(outputData);
+        if( this.afterUpdate ) this.afterUpdate(outputData);
     }
 
     encodeHTMLEntities(text) {
@@ -120,11 +120,11 @@ export default class InputTags {
         return this.tags;
     }
 
-    addTag(tag) {
+    addTag(tags) {
         /* Add a new tag to the list, if multiple delimiter (ex. comma)-separated, they each become individual tags */
         let _html = '';
-        tag.split(this.delimiter).forEach(tag => {
-            tag = tag.trim();
+        tags.split(this.delimiter).forEach(tag => {
+            tags = tag.trim();
             if( tag != '' && (!this.unique || !this.tags.includes(tag)) ){
                 this.tags.push(tag);
                 this.tagCnt++; // each new entry new cnt, so always unique
@@ -243,9 +243,9 @@ export default class InputTags {
 
     handleTagEvent(e) {
         // Handles outside plugin tasks (add/remove tag via event listener)
-        const { action, itemID, tag }= e.detail;
+        const { action, itemID, tags }= e.detail;
         if (action == 'add'){
-            this.addTag(tag);
+            this.addTag(tags);
             this.inputEl.value = '';
             this.inputEl.focus();
 
@@ -258,11 +258,11 @@ export default class InputTags {
 
 
 // DOM accessible function (injected into HTML)
-function _tagAction(action, listID, itemID, tag='') {
+function _tagAction(action, listID, itemID, tags=[]) {
     let eventDetails = {
         bubbles: true, 
         cancelable: true, 
-        detail: { action, itemID, tag }
+        detail: { action, itemID, tags }
     };
     const event = new CustomEvent(`__${listID}_`, eventDetails);
     document.dispatchEvent(event);

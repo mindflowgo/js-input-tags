@@ -16,7 +16,7 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 - **inputId**: element-id of INPUT element to use (*String*, required)
 - **listId**: element-id of UL list element to use (*String*, required)
 - **outputId**: element-id of where to store the generated tag list (ex. hidden input) (*String*)
-- **updateFn**: function to call after change to tags (*Function*)
+- **afterUpdate**: function to call after change to tags (*Function*)
 - **unique**: require tags to be unique (*Boolean*)
 - **delimiter**: normally comma to separate items but alternative possible (*Char*)
 - **specialKeys**: enable tracking special keys (*Boolean*)
