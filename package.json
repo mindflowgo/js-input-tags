@@ -1,6 +1,6 @@
 {
   "name": "js-input-tags",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Simple vanilla javascript input-tags creator, with autocomplete.",
   "main": "index.js",
   "directories": {
