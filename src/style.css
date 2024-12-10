@@ -54,3 +54,8 @@
     padding: 5px; 
     font-style: italic 
 }
+
+.tagsDragThis { cursor: grab; opacity: 0.5; }
+
+.tagsDragOver { margin-left: 16px; }
+.tagsDragOver::before { content: '⇤'; color: red; padding-right: 5px;  }

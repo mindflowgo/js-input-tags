@@ -34,20 +34,20 @@
         </div>
     </div>
 
-     <!--Simple tags input implementation-->
-     <script type="module">
-     import InputTags from "https://unpkg.com/js-input-tags@latest"
+    <!--Simple tags input implementation-->
+    <script type="module">
+        import InputTags from "https://unpkg.com/js-input-tags@latest"
+        
+        function btnAddTag( _tag ){
+            inputTags.addTag(_tag);
+        }
 
-    function btnAddTag( _tag ){
-        inputTags.addTag(_tag);
-    }
+        const inputTags = new InputTags({ 
+            inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput"
+        });
 
-    const inputTags = new InputTags({ 
-        inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput", unique: true
-    });
-
-    // export module functions for DOM
-    window.btnAddTag = btnAddTag;
-     </script>
+        // export module functions for DOM
+        window.btnAddTag = btnAddTag;
+    </script>
 </body>
 </html>
