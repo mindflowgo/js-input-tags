@@ -1,5 +1,5 @@
 /***************************************************************
- * = TAG INPUT = v1.0
+ * = TAG INPUT = v1.14  
  * 
  * Simple tag input engine to allow styling input tags in your code. 
  * Pure javascript, unobtrusive to other code, but DOES require DOM
@@ -27,7 +27,7 @@
  */
 export default class InputTags {
     constructor(props) {
-        const { tags, unique, drag, delimiter, specialKeys, afterUpdate, inputId, listId, outputId, autocompleteList }= props;
+        const { tags, unique, drag, delimiter, specialKeys, mouse, afterUpdate, inputId, listId, outputId, autocompleteList }= props;
 
         const settings = {
             tagCnt: 0,
@@ -37,13 +37,14 @@ export default class InputTags {
             dragTag: { fromId: null, toId: null },
             delimiter: delimiter || ',',
             specialKeys: specialKeys || false,
+            mouse: mouse || false,
             afterUpdate: afterUpdate || undefined,
             searchItems: autocompleteList || [],
             listID: listId,
             listEl: null,
             inputEl: null,
-            outputEl: null,
             searchListEl: null,
+			outputId: outputId || undefined,
         }
         Object.assign(this, settings);
 
@@ -51,28 +52,30 @@ export default class InputTags {
         // try {
             this.inputEl = document.getElementById(inputId);
             this.listEl = document.getElementById(listId);
+
             if (this.inputEl.tagName != "INPUT" || this.listEl.tagName != "UL") {
                 throw new Error("TagsInput: NEED EXISTING input and list element: inputEl, listEl");
             }
-            this.outputEl = document.getElementById(outputId) || undefined;
+
+            // create autocomplete
+            if( this.searchItems.length>0 ){
+                this.#createAutoCompleteElement(inputId);
+                this.inputEl.addEventListener( "keyup", this.#handleAutoCompleteList.bind(this));
+            }
+
             this.listEl.classList.add("tagsList");
             if (this.drag){
-                this.listEl.addEventListener("dragstart", this.handleTagDrag.bind(this));
-                this.listEl.addEventListener("dragover", this.handleTagDrag.bind(this));
-                this.listEl.addEventListener("dragenter", this.handleTagDrag.bind(this));
-                this.listEl.addEventListener("dragend", this.handleTagDrag.bind(this));
+                this.listEl.addEventListener("dragstart", this.#handleTagDrag.bind(this));
+                this.listEl.addEventListener("dragover", this.#handleTagDrag.bind(this));
+                this.listEl.addEventListener("dragenter", this.#handleTagDrag.bind(this));
+                this.listEl.addEventListener("dragend", this.#handleTagDrag.bind(this));
             }
  
             // keyup: allows default behavior (ex. Enter = next item)
             // keydown: intercepts keys, must display/move manually
-            this.inputEl.addEventListener( this.specialKeys ? "keydown" : "keyup", this.handleInput.bind(this)); 
-            document.addEventListener(`__${this.listID}_`, this.handleTagEvent.bind(this));
-
-            // create autocomplete
-            if( this.searchItems.length>0 ){
-                this.createAutoCompleteElement();
-                this.inputEl.addEventListener( "keyup", this.handleAutoCompleteList.bind(this));
-            }
+            this.inputEl.addEventListener( this.specialKeys ? "keydown" : "keyup", this.#handleInput.bind(this));
+            if( this.specialKeys && this.mouse ) this.inputEl.addEventListener( "mousedown", this.#handleInput.bind(this));
+            document.addEventListener(`__${this.listID}_`, this.#handleTagEvent.bind(this));
 
             if( tags && tags.length>0 )
                 tags.forEach( tag => this.addTag(tag) );
@@ -82,93 +85,57 @@ export default class InputTags {
         // }
     }
 
-    // undo all the Input-Tags changes
-    destroy() {
-        this.inputEl.removeEventListener(this.specialKeys ? "keydown" : "keyup", this.handleInput);
-        document.removeEventListener(`__${this.listID}_`, this.handleTagEvent);
-        this.listEl.classList.remove("tagsList");
-        this.listEl.innerHTML = '';
-        if (this.searchItems.length > 0) {
-            this.inputEl.removeEventListener("keyup", this.handleAutoCompleteList);
-            if (this.searchListEl) this.searchListEl.remove();
-        }
-        if (this.drag){
-            this.listEl.removeEventListener("dragstart", this.handleTagDrag);
-            this.listEl.removeEventListener("dragenter", this.handleTagDrag);
-            this.listEl.removeEventListener("dragover", this.handleTagDrag);
-            this.listEl.removeEventListener("dragend", this.handleTagDrag);
-        }
-        this.inputEl = null;
-        this.listEl = null;
-        this.outputEl = null;
-        this.searchListEl = null;
-    }
-    
+    // private methods ----------------------------------------------------------------------
+
     // if adjustment to tag set needed, pass that in.
-    writeTagOutput(_tags=[]){
+    #updateOutput(){
+        const outputEl = document.getElementById(this.outputId);
         // output to a specified input field (ex. hidden) (if given)
-        if( _tags.length>0 ){
-            if( this.outputEl  ) this.outputEl.value = _tags.filter(_tag => _tag !== '').join(this.delimiter);            
-        } else {
-            const outputData = this.tags.filter(_tag => _tag !== '').join(this.delimiter);
-            
-            if( this.outputEl  ) this.outputEl.value = outputData;
-            // calling specified function with tag output (if given)
-            if( this.afterUpdate ) this.afterUpdate(outputData);
-        }
+        const outputData = this.tags.filter(_tag => _tag !== '').join(this.delimiter);
+        
+        if( outputEl  ) outputEl.value = outputData;
+        // calling specified function with tag output (if given)
+        if( this.afterUpdate ) this.afterUpdate(outputData);
     }
 
-    encodeHTMLEntities(text) {
+    #encodeHTMLEntities(text) {
         return text.replace(/[\u00A0-\u9999<>\&'"]/g, c => '&#'+c.charCodeAt(0)+';')
     }
 
-    escapeQuotes(text,slash=false) {
+    #escapeQuotes(text,slash=false) {
         // we do the \\ as well so it's a sort of double-escape, because it un-escapes one level for suggestion box
         return text.replace(/(['"])/g, c => (slash ? '\\' : '') + '&#'+c.charCodeAt(0)+';')
     }
 
-    buildTagsFromDOM(){
+    #buildTagsFromDOM(){
         // now refresh tags based on actual DOM elements present
         this.tags = [];
-        document.querySelectorAll(`#${this.listID} LI`).forEach(el =>{ if( el.dataset.item ) this.tags.push(el.dataset.item); });
-        this.writeTagOutput();
+        document.querySelectorAll(`#${this.listID} LI`).forEach(el =>{ 
+            if( el.dataset.item ) this.tags.push(el.dataset.item); });
+        this.#updateOutput();
     }
 
-    getTags() {
-        return this.tags;
-    }
-
-    addTag(tags) {
-        /* Add a new tag to the list, if multiple delimiter (ex. comma)-separated, they each become individual tags */
-        let _html = '';
-        tags.split(this.delimiter).forEach(tag => {
-            tags = tag.trim();
-            if( tag != '' && (!this.unique || !this.tags.includes(tag)) ){
-                this.tags.push(tag);
-                this.tagCnt++; // each new entry new cnt, so always unique
-                const elementID = this.listID + '_' + this.tagCnt;
-                // htmlEntities on html; and escape ' for data-item in case messages structure
-                _html += `<li id='${elementID}' data-item='${this.escapeQuotes(tag)}'`
-                        +` ${this.drag ? "draggable='true' " : ''}>${this.encodeHTMLEntities(tag)} `
-                        +`<span onclick="_tagAction('remove','${this.listID}','','${elementID}')">X</span></li>`;
-            }
-        });
-        this.listEl.innerHTML += _html;
-        this.writeTagOutput();
-    }
-
-    removeTag(elementID) {
-        // as tag-data may not be unique, we use the unique-DOM-id created for entry
-        const itemEl = document.getElementById(elementID);
-        if( !itemEl ) return;
-        itemEl.remove();
-        this.buildTagsFromDOM();
-    }
-
-    handleInput(e) {
-        let key = e.key; // e.code provides Left/Right for Meta,Alt,etc.
+    #handleInput(e) {
+        // console.log( `[handleInput] e`, e.key || e.which );
+        // e.preventDefault();
+        let key = e.key || ""; // e.code provides Left/Right for Meta,Alt,etc.
         
         if( this.specialKeys ){
+            // deal with MOUSE actions first
+            if( e.which<6 ){
+                // likely clicking in INPUT to get focus, else something present, ignore mouse
+                if( !this.mouse || document.activeElement.id != this.inputEl.id || this.inputEl.value.length>0 ) return; 
+
+                // valid focus object, and was empty so lets fill it with mouse action
+                e.preventDefault();
+                if( e.which==1 )
+                    this.addTag('ClickLeft');
+                else if( e.which==2 )
+                    this.addTag('ClickMiddle');
+                else if( e.which==3 )
+                    this.addTag('ClickRight');
+                return;
+            }
             // won't show these special keys if first pressed
             const ignoreSpecialKeys = ['Shift'];
             // we will create tag immediately for any of these special keys pressed
@@ -238,7 +205,7 @@ export default class InputTags {
         }
     }
 
-    handleTagEvent(e) {
+    #handleTagEvent(e) {
         // Handles outside plugin tasks (add/remove tag via event listener)
         const { action, tags, elementID }= e.detail;
         if (action == 'add'){
@@ -250,9 +217,11 @@ export default class InputTags {
         } else if (action == 'remove'){
             this.removeTag(elementID);
         }
+        // prevent any bubbling to other effects
+        e.preventDefault();
     }
 
-    handleTagDrag(e) {
+    #handleTagDrag(e) {
         if( e.type == 'dragover' ){ e.preventDefault(); return; } // prevent return animation
         if( e.target.tagName != 'LI' ){
             this.dragTag.toId = null;
@@ -281,44 +250,105 @@ export default class InputTags {
                 fromEl.remove();
                 document.getElementById(this.dragTag.toId).insertAdjacentElement("beforebegin", fromNode);
                 // rebuild tag list from new DOM placements
-                this.buildTagsFromDOM();
+                this.#buildTagsFromDOM();
             }
         }
     }
 
+    // public methods ---------------------------------------------------------------------------------
+
+    // undo all the Input-Tags changes
+    destroy() {
+        this.inputEl.removeEventListener(this.specialKeys ? "keydown" : "keyup", this.#handleInput);
+        document.removeEventListener(`__${this.listID}_`, this.#handleTagEvent);
+        this.listEl.classList.remove("tagsList");
+        this.listEl.innerHTML = '';
+        if (this.searchItems.length > 0) {
+            this.inputEl.removeEventListener("keyup", this.#handleAutoCompleteList);
+            if (this.searchListEl) this.searchListEl.remove();
+        }
+        if (this.drag){
+            this.listEl.removeEventListener("dragstart", this.#handleTagDrag);
+            this.listEl.removeEventListener("dragenter", this.#handleTagDrag);
+            this.listEl.removeEventListener("dragover", this.#handleTagDrag);
+            this.listEl.removeEventListener("dragend", this.#handleTagDrag);
+        }
+        this.inputEl = null;
+        this.listEl = null;
+        this.searchListEl = null;
+    }
+
+    // manually adjust output field, perhaps within afterUpdate() hook
+    adjustOutput(_tags=[]){
+        const outputEl = document.getElementById(this.outputId);
+        if( outputEl  ) outputEl.value = _tags.filter(_tag => _tag !== '').join(this.delimiter);            
+    }
+    
+    getTags() {
+        return this.tags;
+    }
+
+    addTag(tags) {
+        /* Add a new tag to the list, if multiple delimiter (ex. comma)-separated, they each become individual tags */
+        let _html = '';
+        tags.split(this.delimiter).forEach(tag => {
+            tags = tag.trim();
+            if( tag != '' && (!this.unique || !this.tags.includes(tag)) ){
+                this.tags.push(tag);
+                this.tagCnt++; // each new entry new cnt, so always unique
+                const elementID = this.listID + '_' + this.tagCnt;
+                // htmlEntities on html; and escape ' for data-item in case messages structure
+                _html += `<li id='${elementID}' data-item='${this.#escapeQuotes(tag)}'`
+                        +` ${this.drag ? "draggable='true' " : ''}>${this.#encodeHTMLEntities(tag)} `
+                        +`<span onclick="_tagAction('remove','${this.listID}','','${elementID}')">X</span></li>`;
+            }
+        });
+        this.listEl.innerHTML += _html;
+        this.#updateOutput();
+    }
+
+    removeTag(elementID) {
+        // as tag-data may not be unique, we use the unique-DOM-id created for entry
+        const elementEl = document.getElementById(elementID);
+        console.log( `[removeTag] elementID(${elementID})`, elementEl)
+        if( !elementEl ) return;
+        elementEl.remove();
+        this.#buildTagsFromDOM();
+    }
+    
+    
     // == AUTOCOMPLETE CODE ========================================
     toggleAutoComplete(tags) {
         if( !this.searchListEl ) return;
         if( this.searchListEl.style.display == 'none' )
-            this.handleAutoCompleteList(null,tags)
+            this.#handleAutoCompleteList(null,tags)
         else
             this.searchListEl.style.display = 'none';
     }
 
-    createAutoCompleteElement() {
+    #createAutoCompleteElement(inputId) {
         // create search list `ul` element and set to `this.searchListEl`
+        const spanEl = document.createElement('span');
+        const inputEl = document.getElementById(inputId);
+        spanEl.className = 'tagsAutocompleteList';
+        inputEl.parentNode.insertBefore(spanEl, inputEl); // Insert the <span> before the input
+        spanEl.appendChild(inputEl); // Move the input inside the <span>
         const elName = this.listID + '_autocomplete';
-        const el = `<ul id='${elName}' class='tagsAutocompleteList' style='display: none'></ul>`;
-        this.inputEl.insertAdjacentHTML("afterend", el);
+        const html = `<ul id='${elName}' style='display: none'></ul>`;
+        spanEl.insertAdjacentHTML('beforeend', html);
         this.searchListEl = document.getElementById(elName);
     }
 
-    handleAutoCompleteList(e, _q='') {
+    #handleAutoCompleteList(e, _q='') {
         // on keyup so after key actions complete
         const q = _q || e.target.value.trim();
         let results = [];
         if( q.length>1 ){
             results = this.searchItems.filter(item => item.toLowerCase().indexOf(q.toLowerCase()) != -1);
-            const _html = "<p class='tagsAutocompleteListHeader'>Search Result:</p>"
-                         + this.suggestTag(results);
+            const _html = results.map(tag => `<li onclick="_tagAction('add','${this.listID}','${this.#escapeQuotes(tag,true)}')">${this.#encodeHTMLEntities(tag)}</li>` ).join('');
             this.searchListEl.innerHTML = _html;
         }
         this.searchListEl.style.display =( q.length>1 && results.length>0 ? 'block' : 'none' );
-    }
-    
-    suggestTag(tagArray) {
-        const _html = tagArray.map(tag => `<li onclick="_tagAction('add','${this.listID}','${this.escapeQuotes(tag,true)}')">${this.encodeHTMLEntities(tag)}</li>` ).join('');
-        return _html;
     }
 
 } // END of class: TagsInput

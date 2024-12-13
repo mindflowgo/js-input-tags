@@ -27,32 +27,31 @@
     justify-content: center;
 }
 
-.tagsAutocompleteList {
+.tagsAutocompleteList span{
     position: relative;
-    padding-left: 0px;
-    border: 1px solid lightgrey;
-    margin-top: 5px;
-    max-height: 200px;
+}
+.tagsAutocompleteList ul {
+    position: absolute;
+    z-index: 99;
+    display: block;
+    max-height: 300px;
     overflow-y: auto;
+    
+    margin: 5px 0 0;
+    padding: 0px;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+    background: white;
 }
 .tagsAutocompleteList li{
     list-style: none;
-    border-bottom: 1px solid lightgrey;
+    border-bottom: 1px dotted #eee;
     padding: 5px;
     cursor: pointer;
 }
-
 .tagsAutocompleteList li:hover {
-    background: #f5f5f5;
+    background: #eee;
     font-weight: 600;
-}
-
-.tagsAutocompleteListHeader {
-    border-bottom: 1px solid lightgrey; 
-    margin-bottom: 0px; 
-    font-weight: bold; 
-    padding: 5px; 
-    font-style: italic 
 }
 
 .tagsDragThis { cursor: grab; opacity: 0.5; }

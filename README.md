@@ -22,6 +22,7 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 - **delimiter**: normally comma to separate items but alternative possible (*Char*, default ',')
 - **drag**: allow re-arranging the tags (*Boolean*, default false)
 - **specialKeys**: enable tracking special keys (*Boolean*, default false)
+- **mouse**: allow capture of a mouse click as tag (*Boolean*, default false)
 - **autocompleteList**: autocomplete list suggestions (*Array*)
 
 ## Methods
