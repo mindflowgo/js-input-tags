@@ -1,5 +1,5 @@
 /***************************************************************
- * = TAG INPUT = v1.14  
+ * = TAG INPUT = v1.16
  * 
  * Simple tag input engine to allow styling input tags in your code. 
  * Pure javascript, unobtrusive to other code, but DOES require DOM
@@ -27,7 +27,7 @@
  */
 export default class InputTags {
     constructor(props) {
-        const { tags, unique, drag, delimiter, specialKeys, mouse, afterUpdate, inputId, listId, outputId, autocompleteList }= props;
+        const { tags, unique, drag, delimiter, maxTags, specialKeys, mouse, afterUpdate, afterEnter, inputId, listId, outputId, autocompleteList }= props;
 
         const settings = {
             tagCnt: 0,
@@ -36,10 +36,13 @@ export default class InputTags {
             drag: drag || false,
             dragTag: { fromId: null, toId: null },
             delimiter: delimiter || ',',
+            maxTags,
             specialKeys: specialKeys || false,
             mouse: mouse || false,
-            afterUpdate: afterUpdate || undefined,
+            afterUpdate,
+            afterEnter,
             searchItems: autocompleteList || [],
+            inputId,
             listID: listId,
             listEl: null,
             inputEl: null,
@@ -77,9 +80,12 @@ export default class InputTags {
             if( this.specialKeys && this.mouse ) this.inputEl.addEventListener( "mousedown", this.#handleInput.bind(this));
             document.addEventListener(`__${this.listID}_`, this.#handleTagEvent.bind(this));
 
+            this.listEl.innerHTML = ''; // clear the list initially
             if( tags && tags.length>0 )
-                tags.forEach( tag => this.addTag(tag) );
+                tags.forEach( tag => this.addTag(tag,true) );
 
+            // focus on input
+            this.inputEl.focus();
         // } catch (e) {
         //     throw new Error("TagsInput: failed setup, quitting.");
         // }
@@ -88,14 +94,14 @@ export default class InputTags {
     // private methods ----------------------------------------------------------------------
 
     // if adjustment to tag set needed, pass that in.
-    #updateOutput(){
+    #updateOutput(error=''){
         const outputEl = document.getElementById(this.outputId);
+        if( error ) this.inputEl.setAttribute('placeholder', error);
         // output to a specified input field (ex. hidden) (if given)
         const outputData = this.tags.filter(_tag => _tag !== '').join(this.delimiter);
-        
         if( outputEl  ) outputEl.value = outputData;
         // calling specified function with tag output (if given)
-        if( this.afterUpdate ) this.afterUpdate(outputData);
+        if( this.afterUpdate ) this.afterUpdate(outputData,error);
     }
 
     #encodeHTMLEntities(text) {
@@ -107,19 +113,18 @@ export default class InputTags {
         return text.replace(/(['"])/g, c => (slash ? '\\' : '') + '&#'+c.charCodeAt(0)+';')
     }
 
-    #buildTagsFromDOM(){
+    #buildTagsFromDOM(update=true){
         // now refresh tags based on actual DOM elements present
         this.tags = [];
         document.querySelectorAll(`#${this.listID} LI`).forEach(el =>{ 
             if( el.dataset.item ) this.tags.push(el.dataset.item); });
-        this.#updateOutput();
+        if( update )this.#updateOutput();
     }
 
     #handleInput(e) {
-        // console.log( `[handleInput] e`, e.key || e.which );
         // e.preventDefault();
         let key = e.key || ""; // e.code provides Left/Right for Meta,Alt,etc.
-        
+            
         if( this.specialKeys ){
             // deal with MOUSE actions first
             if( e.which<6 ){
@@ -202,6 +207,7 @@ export default class InputTags {
             // insert new tag
             this.addTag(e.target.value);
             e.target.value = "";
+            if( this.tags.length>0 && typeof(this.afterEnter)=='function' ) this.afterEnter(this.tags);
         }
     }
 
@@ -245,7 +251,9 @@ export default class InputTags {
             document.querySelectorAll(`#${this.listID} LI`).forEach(el => el.classList.remove('tagsDragOver'));
             const fromEl = document.getElementById(this.dragTag.fromId);
             fromEl.classList.remove('tagsDragThis');
-            if( this.dragTag.toId && e.offsetY > -30 && e.offsetY < 90 ) { //drop must be in the basic area of the tags else ignore
+            if( this.dragTag.toId && this.dragTag.toId != this.dragTag.fromId ) { //drop must be in the basic area of the tags else ignore (&& e.offsetY > -30 && e.offsetY < 90)
+                const toRect = document.getElementById(this.dragTag.toId).getClientRects()[0];
+                if( Math.abs((e.clientX+window.scrollX)-toRect.left)>100 ){ console.log( ` x DROP IGNORED: too far away tag on X-axis (${toRect.left},${toRect.top}) drop(${e.clientX+window.scrollX},${e.clientY})`); return; }
                 const fromNode = fromEl.cloneNode(true); 
                 fromEl.remove();
                 document.getElementById(this.dragTag.toId).insertAdjacentElement("beforebegin", fromNode);
@@ -261,8 +269,8 @@ export default class InputTags {
     destroy() {
         this.inputEl.removeEventListener(this.specialKeys ? "keydown" : "keyup", this.#handleInput);
         document.removeEventListener(`__${this.listID}_`, this.#handleTagEvent);
-        this.listEl.classList.remove("tagsList");
-        this.listEl.innerHTML = '';
+        if( this.tags.length<1 ) this.listEl.classList.remove("tagsList");
+        this.listEl.innerHTML = this.tags.map(tag =>`<li>${this.#encodeHTMLEntities(tag)}</li>`).join(''); // allow the list items to remain
         if (this.searchItems.length > 0) {
             this.inputEl.removeEventListener("keyup", this.#handleAutoCompleteList);
             if (this.searchListEl) this.searchListEl.remove();
@@ -288,29 +296,36 @@ export default class InputTags {
         return this.tags;
     }
 
-    addTag(tags) {
-        /* Add a new tag to the list, if multiple delimiter (ex. comma)-separated, they each become individual tags */
-        let _html = '';
+    addTag(tags, initLoad=false) {
+        // rebuild tags list firstfrom DOM; in case modified somewhere
+        this.#buildTagsFromDOM(false);
+
+        let _html = '', _error = '';
         tags.split(this.delimiter).forEach(tag => {
-            tags = tag.trim();
-            if( tag != '' && (!this.unique || !this.tags.includes(tag)) ){
-                this.tags.push(tag);
-                this.tagCnt++; // each new entry new cnt, so always unique
-                const elementID = this.listID + '_' + this.tagCnt;
-                // htmlEntities on html; and escape ' for data-item in case messages structure
-                _html += `<li id='${elementID}' data-item='${this.#escapeQuotes(tag)}'`
-                        +` ${this.drag ? "draggable='true' " : ''}>${this.#encodeHTMLEntities(tag)} `
-                        +`<span onclick="_tagAction('remove','${this.listID}','','${elementID}')">X</span></li>`;
+            if( !initLoad && this.maxTags && this.tags.length >= this.maxTags ){ 
+                console.log( ` x maxTags(${this.maxTags}) reached: ignoring tag '${tag}'`); 
+                _error = 'MaxTags Reached';
+
+            }  else {
+                tag = tag.trim();
+                if( tag != '' && (!this.unique || !this.tags.includes(tag)) ){
+                    this.tags.push(tag);
+                    this.tagCnt++; // each new entry new cnt, so always unique
+                    const elementID = this.listID + '_' + this.tagCnt;
+                    // htmlEntities on html; and escape ' for data-item in case messages structure
+                    _html += `<li id='${elementID}' data-item='${this.#escapeQuotes(tag)}'`
+                            +` ${this.drag ? "draggable='true' " : ''}>${this.#encodeHTMLEntities(tag)} `
+                            +`<span onclick="_tagAction('remove','${this.listID}','','${elementID}')">X</span></li>`;
+                }
             }
         });
         this.listEl.innerHTML += _html;
-        this.#updateOutput();
+        if( _html || _error ) this.#updateOutput(_error);
     }
 
     removeTag(elementID) {
         // as tag-data may not be unique, we use the unique-DOM-id created for entry
         const elementEl = document.getElementById(elementID);
-        console.log( `[removeTag] elementID(${elementID})`, elementEl)
         if( !elementEl ) return;
         elementEl.remove();
         this.#buildTagsFromDOM();

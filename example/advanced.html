@@ -57,7 +57,7 @@
 
         const myTags = new InputTags({ 
 			inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput",
-			tags: defaultTags, specialKeys: true, delimiter: ';', unique: true, drag: true, mouse: true,
+			tags: defaultTags, specialKeys: true, delimiter: ';', unique: true, drag: true, mouse: true, maxTags: 10,
             afterUpdate: displayTags,
             // pro-actively process the tags to change format
             // afterUpdate: function(outputVal){ let tags = outputVal.split(this.delimiter); tags.unshift("Prepend"); this.writeTagOutput(tags); displayTags(tags); },
