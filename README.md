@@ -194,3 +194,9 @@ You can use the 4 hooks to limit characters allow in inputs, prevent certain tag
 ```javascript
     window.showList = (search) => inputTags.showAutocomplete(search);
 ```
+
+####
+If you modify the javascript in src/index.js, you can build it with npm run build for distribution.
+
+Before forking and spreading another version, please contact the author with a PR if you have improvements 
+you would like. I'd be happy to integrate improvements.

@@ -2,12 +2,15 @@
   "name": "js-input-tags",
   "version": "2.0.1",
   "description": "Simple, but powerful vanilla javascript input-tags creator, with autocomplete.",
-  "main": "index.js",
+  "main": "dist/input-tags.min.js",
+  "style": "dist/input-tags.min.css",
   "directories": {
     "example": "example"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:js": "terser src/index.js -c -m -o dist/input-tags.min.js",
+    "build:css": "postcss src/style.css -u cssnano -o dist/input-tags.min.css",
+    "build": "npm run build:js && npm run build:css"
   },
   "repository": {
     "type": "git",
@@ -24,5 +27,11 @@
   "bugs": {
     "url": "https://github.com/mindflowgo/js-input-tags/issues"
   },
-  "homepage": "https://github.com/mindflowgo/js-input-tags#readme"
+  "homepage": "https://github.com/mindflowgo/js-input-tags#readme",
+  "devDependencies": {
+    "cssnano": "^7.1.2",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
+    "terser": "^5.44.1"
+  }
 }
