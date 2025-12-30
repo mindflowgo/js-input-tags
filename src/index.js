@@ -49,18 +49,11 @@ export default class InputTags {
     #init() {
         // If the element is a UL, process it, else create list IN it.
         const targetEl = this.opts.targetEl
-        console.log( ``)
         if( targetEl && targetEl.tagName === 'UL' ) {
-            console.log( `'list is already a UL, so looking for items to add to list`)
-
             this.list = targetEl;
             // Clear existing content except for any non-tag items
             Array.from(this.list.children).forEach(child => {
-                if (!child.dataset.tag && !child.querySelector('span')) {
-                    console.log( `keeping child tag: `, child )
-                } else {
-                    child.remove();
-                }
+                if (child.dataset.tag || child.querySelector('span')) child.remove();
             });
         } else {
             // Create new list if none exists

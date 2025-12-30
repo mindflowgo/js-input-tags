@@ -1,9 +1,12 @@
 # js-input-tags
+## Version 2.01
 **Check the CodePen.io [basic example](https://codepen.io/mindflowgo/pen/PwYNQVe); [autocomplete example](https://codepen.io/mindflowgo/pen/MYgyVgg).**
 
 *Project objective: simple but powerful vanilla ES6 javascript (code: 350 lines) input tag generator for any input fields; with auto-completion lists.*
 
 Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://github.com/rk4bir/simple-tags-input); using his idea and CSS but then rewritten for ES6 and more features. Can record special keys (Meta, Alt, Tab, MouseLeft, VolumeUp, etc) as key presses.
+
+This project is mobile-friendly: but you may want to prevent scrolling of screen depending on your needs.
 
 ## Demo
 *(Go to my github repo to see the demos, this readme does't show them on other locations)*
@@ -12,29 +15,28 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 ![special-keys](./example/media/special-keys.gif)
 
 ## Options
-*Only required tags are inputId and listId*
-- **tags**: can pre-populate tags (*Array*)
-- **inputId**: element-id of INPUT element to use (*String*, required)
-- **listId**: element-id of UL list element to use (*String*, required)
-- **outputId**: element-id of where to store the generated tag list (ex. hidden input) (*String*)
-- **afterUpdate**: function to call after change to tags (*Function*)
-- **afterEnter**: function to call after enter key pressed to save tags (*Function*)
-- **unique**: require tags to be unique (*Boolean*, default: false)
-- **delimiter**: normally comma to separate items but alternative possible (*Char*, default ',')
-- **drag**: allow re-arranging the tags (*Boolean*, default false)
-- **maxTags**: maximum number of tags to allow entered (*Number*, default unlimited)
-- **specialKeys**: enable tracking special keys (*Boolean*, default false)
-- **mouse**: allow capture of a mouse click as tag (*Boolean*, default false)
-- **autocompleteList**: autocomplete list suggestions (*Array*)
+*Only required tags are inputId*
+- **allowDelete**: allow the [x] deleting of tags (default true)
+- **allowDuplicates**: allow duplicate tags (default false)
+- **allowSpaces**: allow spaces in tags (default false)
+- **allowCustomKeys**: enables special character handling (default false)
+- **autocomplete**: array of auto-complete options
+- **initialTags**: array of initial tags to display
+- **targetEl**: target list element (if UL) or parent for the created list element
+- **onAdd**: a function called before adding the tag text (returns text or modified version)
+- **onDelete**: a function called before deleting a tag (returns true if allowed, false otherwise)
+- **onInput**: a function called after new user input received
+- **onChange**: a function called after change to tags (new tag added, re-arranged, deleted tag)
 
 ## Methods
 *With a valid InputTags() instance you have these methods:*
-- **getTags()**: get the list of tags created (these will be reflected in outputId element if linked)
+- **getTags()**: get the list of tags created
+- **setTags([])**: set the list of tags
 - **addTag(tag)**: add a new tag to input tags instance
-- **removeTag(elementID)**: remove a tag, using it's unique id
-- **toggleAutoComplete(query)**: toggle showing autoComplete with matches for the query
+- **deleteTag(index)**: remove a tag, the index of it's placement
+- **showAutocomplete(query)**: showes autoComplete with matches for the query
+- **hideAutocomplete()**
 - **destroy()**: remove the instance
-There are a few other methods but they a better only used internally.
 
 ## Usage
 There are 3 steps to using it
@@ -94,7 +96,7 @@ That's it!
         <div class="mb-3">
             <p class="mb-2">Tag List:</p>
             <!-- specify the ul LIST element to show the tags -->
-            <ul id="tagsList"><li><strong>List:</strong></li></ul>
+            <ul id="myTagList"><li><strong>List:</strong></li></ul>
             <!-- include the input box to input the tags -->
              <p><i>Type something and press Enter</i></p>
             <input type="text" id="tagsInput" class="form-control mt-2" spellcheck="false" placeholder="Enter a tag" />
@@ -112,22 +114,19 @@ That's it!
      <script type="module">
         import InputTags from "https://unpkg.com/js-input-tags@latest"
 
-        function displayTags( _tags ){
-            console.log( `[displayTags] called, with tags: ${_tags}` );
-            document.querySelector('#tagsData').innerHTML = _tags;
-        }
+        const inputEl = document.getElementById('tagsInput');
+        const inputTags = new InputTags(inputEl, {
+            autocomplete: ['apple', 'banana', 'cherry'],
+            // initialTags: ['one','two','three'], // pre-populate (1)
+            targetEl: document.getElementById('myTagList'), // pre-populate (2)
+            onChange: (tags) => document.getElementById('tagsData').innerHTML = tags?.join(',') || ''
+        });
 
-        function btnAddTag( _tag ){
-            inputTags.addTag(_tag);
-        }
-
-        const inputTags = new InputTags({ 
-			inputId: "tagsInput", listId: "tagsList",
-			unique: true, afterUpdate: displayTags,
-		});
+        // show initial tags by adding something
+        setTimeout( ()=>inputTags.addTag('Auto-Add'), 100)
 
         // export module functions for DOM
-        window.btnAddTag = btnAddTag;
+        window.btnAddTag = (tag) => inputTags.addTag(tag);
      </script>
 </body>
 </html>        
@@ -148,10 +147,10 @@ That's it!
 ```
 
 #### Step 2 - Insert needed HTML into your code
+Really just having an input box to enter tags is all that is needed. The package can use
+an existing list (UL) otherwise it will create one and pre-pend above the INPUT box.
 ```html
 <div>
-    <ul id="tagsList"></ul>
-    
     <input type="text" id="tagsInput" spellcheck="false" placeholder="Enter a tag" />
 
     <button onClick="btnAddTag('hello')">Add Tag 'hello'</button>
@@ -160,40 +159,38 @@ That's it!
 
 #### Step 3 - Run Javascript (to initialize INPUT field)
 ```javascript
-    const inputTags = new InputTags({ 
-        inputId: "tagsInput", listId: "tagsList",
-        tags: ['default','tags'], specialKeys: true, delimiter: ';', afterUpdate: displayTags,
-        autocompleteList: [ "Canada", "India", "Sri Lanka", "United States", "United 'UK' Kingdom", "Vietnam", "Zimbabwe"]
+    const inputEl = document.getElementById('tagsInput');
+    const inputTags = new InputTags(inputEl, {
+        autocomplete: ['apple', 'banana', 'cherry'],
+        initialTags: ['one','two','three'], // pre-populate (1)
+        // targetEl: document.getElementById('myTagList'), // pre-populate (2)
+        // onChange: (tags) => document.getElementById('tagsData').innerHTML = tags?.join(',') || ''
     });
 
-    function displayTags( _tags ){
-            console.log( `[displayTags] called, with tags: ${_tags}` );
-    }
-
-    function btnAddTag( _tag ){
-        myTags.addTag(_tag);
-    }
-
-    // export module functions for DOM
-    window.btnAddTag = btnAddTag;
+    // export module functions for DOM access if needed
+    window.inputTags = inputTags;
 ```
 
 ### Advanced Ideas
-*afterUpdate*: You can postprocess after changes and change how it saves to output field, ex.
+You can use the 4 hooks to limit characters allow in inputs, prevent certain tags from being created, or others from being deleted (with these hooks: onInput, onAdd, onDelete)
+
 ```javascript
-    const myTags = new InputTags({ 
-        inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput",
-        afterUpdate: function(outputVal){ let tags = outputVal.split(this.delimiter); tags.unshift("Prepend"); this.writeTagOutput(tags); }
-    });
+    const inputEl = document.getElementById('tagsInput');
+    const inputTags = new InputTags(inputEl, {
+        targetEl: document.getElementById('myList'),
+        autocomplete: ['apple', 'banana', 'cherry', 'pear', 'pineapple'],
+        // allowCustomKeys: true,
+        // onInput: (value,e) => customKeyHandling(value,e),
+        onInput,
+        onAdd,
+        onDelete,
+        onChange: (tags) => document.getElementById('tagsOutput').value = tags?.join(',') || '',
+        });
 ```
 - *AutoComplete*: Triggering display of autocomplete: see example/advanced.html "Show AutoComplete" button.
 ```html
-    <button onClick="showList('uni')">Show AutoComplete List</button>
+    <button onClick="showList('apple')">Show AutoComplete List</button>
 ```
 ```javascript
-    function showList( tags ){
-        myTags.toggleAutoComplete(tags);
-    }
-    // show script-module functions in acctual DOM
-    window.showList = showList;
+    window.showList = (search) => inputTags.showAutocomplete(search);
 ```
