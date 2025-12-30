@@ -1,11 +1,11 @@
 /***************************************************************
- * = TAG INPUT = v1.16
+ * = TAG INPUT = v2.00
  * 
  * Simple tag input engine to allow styling input tags in your code. 
  * Pure javascript, unobtrusive to other code, but DOES require DOM
  * access.
  * 
- * By Filipe Laborde (fil@rezox.com), 7-Dec-2024
+ * By Filipe Laborde (fil@rezox.com), 29-Dec-2025
  * 
  * Inspired by https://github.com/rk4bir/simple-tags-input - (c) 2022 Raihan Kabir
  * 
@@ -14,370 +14,387 @@
  * USAGE:
  * import InputTags from '...'
  * 
- * const inputTags = new InputTags({ 
- *    listId: "tagsList", inputId: "tagsInput", outputId: "saveInput",  // DOM elements to attach to
- *    afterUpdate: mySave                                                  // Pass in function to call with updated tag items
- *    specialKeys: true, delimiter: ';',                                // To record special keys (ex. arrow, etc)
- *    tags: ['first','second'], unique: false, 
- *    autocompleteList: [ "One", "Two", "AutoSelect3", "AutoSelect4"]
+ * const inputTags = new InputTags(document.getElementById('tagsInput'), { 
+ *    autocomplete: ['apple', 'banana', 'cherry'],
+ *    onAdd: (tag) => console.log('Added:', tag),
+ *    onDelete: (tag) => console.log('Deleted:', tag)
  * });
- * 
- * Example reason for changing delimiter from comma: when pressing special keys (Ctrl,Alt), if 
- * multiple pressed
  */
 export default class InputTags {
-    constructor(props) {
-        const { tags, unique, drag, delimiter, maxTags, specialKeys, mouse, afterUpdate, afterEnter, inputId, listId, outputId, autocompleteList }= props;
+    constructor(inputEl, opts = {}) {
+        this.input = inputEl;   // where the user enters tags
+        this.opts = {
+            allowDelete: true,  // allow the [x] deletes
+            allowDuplicates: false, // whether repeat tag names allowed
+            allowSpaces: false, // whether spaces in tags allowed (else = Enter)
+            allowCustomKeys: false,// handle special characters with onInput 
+            autocomplete: [],   // ['apple', 'banana', ...]
+            initialTags: [],    // initial tags to show
+            targetEl: null,     // where to place the list (optional, could be pre-populated UL list)
+            onAdd: null,
+            onDelete: null,
+            onInput: null,
+            onChange: null,
+            ...opts,
+        };
 
-        const settings = {
-            tagCnt: 0,
-            tags: [],
-            unique: unique || false,
-            drag: drag || false,
-            dragTag: { fromId: null, toId: null },
-            delimiter: delimiter || ',',
-            maxTags,
-            specialKeys: specialKeys || false,
-            mouse: mouse || false,
-            afterUpdate,
-            afterEnter,
-            searchItems: autocompleteList || [],
-            inputId,
-            listID: listId,
-            listEl: null,
-            inputEl: null,
-            searchListEl: null,
-			outputId: outputId || undefined,
-        }
-        Object.assign(this, settings);
-
-        // initialize plugin
-        // try {
-            this.inputEl = document.getElementById(inputId);
-            this.listEl = document.getElementById(listId);
-
-            if (this.inputEl.tagName != "INPUT" || this.listEl.tagName != "UL") {
-                throw new Error("TagsInput: NEED EXISTING input and list element: inputEl, listEl");
-            }
-
-            // create autocomplete
-            if( this.searchItems.length>0 ){
-                this.#createAutoCompleteElement(inputId);
-                this.inputEl.addEventListener( "keyup", this.#handleAutoCompleteList.bind(this));
-            }
-
-            this.listEl.classList.add("tagsList");
-            if (this.drag){
-                this.listEl.addEventListener("dragstart", this.#handleTagDrag.bind(this));
-                this.listEl.addEventListener("dragover", this.#handleTagDrag.bind(this));
-                this.listEl.addEventListener("dragenter", this.#handleTagDrag.bind(this));
-                this.listEl.addEventListener("dragend", this.#handleTagDrag.bind(this));
-            }
- 
-            // keyup: allows default behavior (ex. Enter = next item)
-            // keydown: intercepts keys, must display/move manually
-            this.inputEl.addEventListener( this.specialKeys ? "keydown" : "keyup", this.#handleInput.bind(this));
-            if( this.specialKeys && this.mouse ) this.inputEl.addEventListener( "mousedown", this.#handleInput.bind(this));
-            document.addEventListener(`__${this.listID}_`, this.#handleTagEvent.bind(this));
-
-            this.listEl.innerHTML = ''; // clear the list initially
-            if( tags && tags.length>0 )
-                tags.forEach( tag => this.addTag(tag,true) );
-
-            // focus on input
-            this.inputEl.focus();
-        // } catch (e) {
-        //     throw new Error("TagsInput: failed setup, quitting.");
-        // }
-    }
-
-    // private methods ----------------------------------------------------------------------
-
-    // if adjustment to tag set needed, pass that in.
-    #updateOutput(error=''){
-        const outputEl = document.getElementById(this.outputId);
-        if( error ) this.inputEl.setAttribute('placeholder', error);
-        // output to a specified input field (ex. hidden) (if given)
-        const outputData = this.tags.filter(_tag => _tag !== '').join(this.delimiter);
-        if( outputEl  ) outputEl.value = outputData;
-        // calling specified function with tag output (if given)
-        if( this.afterUpdate ) this.afterUpdate(outputData,error);
-    }
-
-    #encodeHTMLEntities(text) {
-        return text.replace(/[\u00A0-\u9999<>\&'"]/g, c => '&#'+c.charCodeAt(0)+';')
-    }
-
-    #escapeQuotes(text,slash=false) {
-        // we do the \\ as well so it's a sort of double-escape, because it un-escapes one level for suggestion box
-        return text.replace(/(['"])/g, c => (slash ? '\\' : '') + '&#'+c.charCodeAt(0)+';')
-    }
-
-    #buildTagsFromDOM(update=true){
-        // now refresh tags based on actual DOM elements present
         this.tags = [];
-        document.querySelectorAll(`#${this.listID} LI`).forEach(el =>{ 
-            if( el.dataset.item ) this.tags.push(el.dataset.item); });
-        if( update )this.#updateOutput();
+        this.abortController = new AbortController();
+        this.dragAbortController = null;
+        this.dragTarget = null;
+
+        this.#init();
     }
 
-    #handleInput(e) {
-        // e.preventDefault();
-        let key = e.key || ""; // e.code provides Left/Right for Meta,Alt,etc.
-            
-        if( this.specialKeys ){
-            // deal with MOUSE actions first
-            if( e.which<6 ){
-                // likely clicking in INPUT to get focus, else something present, ignore mouse
-                if( !this.mouse || document.activeElement.id != this.inputEl.id || this.inputEl.value.length>0 ) return; 
+    #init() {
+        // If the element is a UL, process it, else create list IN it.
+        const targetEl = this.opts.targetEl
+        console.log( ``)
+        if( targetEl && targetEl.tagName === 'UL' ) {
+            console.log( `'list is already a UL, so looking for items to add to list`)
 
-                // valid focus object, and was empty so lets fill it with mouse action
-                e.preventDefault();
-                if( e.which==1 )
-                    this.addTag('ClickLeft');
-                else if( e.which==2 )
-                    this.addTag('ClickMiddle');
-                else if( e.which==3 )
-                    this.addTag('ClickRight');
-                return;
-            }
-            // won't show these special keys if first pressed
-            const ignoreSpecialKeys = ['Shift'];
-            // we will create tag immediately for any of these special keys pressed
-            const firstSpecialKeys = ['Backspace','Enter','←','→','↑','↓','Escape','Tab','CapsLock','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'];
-            // will allow groupings of these 
-            const specialKeyList = ['Control','Meta','Alt'];
-            // map any special keys we want symbols to appear for, remap here (and then reference them by their new symbol!)
-            const symbolMap = { 
-                ArrowLeft: "←", 
-                ArrowUp: "↑",
-                ArrowRight: "→",
-                ArrowDown: "↓"
-            }
-
-            if( symbolMap[key] )
-                key = symbolMap[key];
-            
-            if( ignoreSpecialKeys.includes(key) ){ //e.target.value.length == 0 && 
-                // we don't want showing shift as it's usually to uppercase a letter
-                return;
-
-            } else if( e.target.value.length == 0 && firstSpecialKeys.includes(key) ){
-                // SPECIAL KEY + First keypress  (arrows,backspace,enter): immediate tag generation 
-                // (their behaviour changes beyond first character to help navigation);
-                e.preventDefault();
-                
-                this.addTag(key);
-                e.target.value = "";
-                return;
-
-            } else if( key == "Enter" ) {
-                // always intercept and prevent enter's default
-                e.preventDefault();
-
-            } else {
-                // clear any empty commas (,,) - build array of comma separated keys in input
-                const priorKeys = e.target.value.split(',').filter(_key => _key.trim() !== '');
-
-                // if it's special characters, we only allow some, and ONLY with other special characters; ignore rest
-                const allSpecial = priorKeys.every(_key => specialKeyList.includes(_key));
-                const keyAlreadyExists = priorKeys.includes(key);
-
-                if( key.length>2 ){
-                    // SPECIAL KEYS - add if unique and prior are special too
-                    if( allSpecial && !keyAlreadyExists && specialKeyList.includes(key) ) { 
-                        // if prior are special, we allow adding new unique ones
-                        e.target.value += (e.target.value.length>0 ? ',' : '') + key;
-                    }
-                    // special key but, already exists, not on list, etc, so ignoring:
-                    // BUT letting system default behaviours bubble -> else add: else { preventDefault(); }
-
-                } else if( allSpecial && e.target.value.length>0 ){
-                    // NORMAL KEY: are all prior keys special? -> insert comma before key!
-                    // preventDefault in case holding special key and pressing normal (don't want system behaviour)
-                    e.preventDefault();
-                    e.target.value += ',' + key;
+            this.list = targetEl;
+            // Clear existing content except for any non-tag items
+            Array.from(this.list.children).forEach(child => {
+                if (!child.dataset.tag && !child.querySelector('span')) {
+                    console.log( `keeping child tag: `, child )
+                } else {
+                    child.remove();
                 }
-                // otherwise handle normally
-            }
-        } 
-
-        // Normal processing for keys - add to input (and do search-items if available), unless Enter in which we create tag
-        if( key == "Enter") {
-            // insert new tag
-            this.addTag(e.target.value);
-            e.target.value = "";
-            if( this.tags.length>0 && typeof(this.afterEnter)=='function' ) this.afterEnter(this.tags);
+            });
+        } else {
+            // Create new list if none exists
+            this.list = document.createElement('ul');
+            this.list.className = 'tagsList';
+            this.list.setAttribute('role', 'list');
+            if( targetEl )    // list container exists put this into it.
+                targetEl.appendChild(this.list)
+            else            // no list container exists, so insert above input
+                this.input.parentNode.insertBefore(this.list, this.input);
         }
+
+        this.placeholder = document.createElement('li');
+        this.placeholder.className = 'tagsDragPlaceholder';
+
+        this.autocomplete = document.createElement('div');
+        this.autocomplete.className = 'tagsAutocompleteList';
+        this.autocomplete.style.display = 'none';
+
+        // Insert autocomplete after input
+        this.input.insertAdjacentElement('afterend', this.autocomplete)
+        // this.input.parentNode.insertBefore(this.autocomplete, this.input);
+
+        // special keys means ignore normal input handling, let user manage 
+        if (!this.opts.allowCustomKeys) 
+            this.input.addEventListener('input', this.#onInput.bind(this), { 
+                signal: this.abortController.signal 
+            });
+        this.input.addEventListener('keydown', this.#onKeydown.bind(this), { 
+            signal: this.abortController.signal 
+        });
+        this.list.addEventListener('pointerdown', this.#onPointerDown.bind(this), { 
+            signal: this.abortController.signal 
+        });
+
+        // Load existing tags (from data-tags or initial <li>)
+        this.#loadInitialTags();
     }
 
-    #handleTagEvent(e) {
-        // Handles outside plugin tasks (add/remove tag via event listener)
-        const { action, tags, elementID }= e.detail;
-        if (action == 'add'){
-            this.addTag(tags);
-            this.inputEl.value = '';
-            this.inputEl.focus();
-            if( this.searchListEl ) this.searchListEl.style.display = 'none';
-
-        } else if (action == 'remove'){
-            this.removeTag(elementID);
+    #loadInitialTags() {
+        // initial values can be passed in as: 
+        // 1) options: initialTags
+        // 2) targetEl UL list with LI tags
+        const tags = this.opts.initialTags;
+        if (tags && tags.length) {
+            tags.forEach(tag => this.addTag(tag.trim()));
+            return;
         }
-        // prevent any bubbling to other effects
-        e.preventDefault();
+
+        // From existing <li> children - re-attach as draggable elements
+        const existing = this.list.querySelectorAll('li');
+        existing.forEach(li => {
+            const text = li.textContent.replace('×', '').trim();
+            if (text) this.addTag(text,li); // add to existing li
+        });
+        if( existing && this.opts.onChange ) this.opts.onChange()
     }
 
-    #handleTagDrag(e) {
-        if( e.type == 'dragover' ){ e.preventDefault(); return; } // prevent return animation
-        if( e.target.tagName != 'LI' ){
-            this.dragTag.toId = null;
-            return; // care about operations on LI
-        }
-        const el = e.target;
-
-        if( e.type == 'dragstart' ){
-            this.dragTag.fromId = el.id;
-            e.dataTransfer.effectAllowed = 'move';
-            el.classList.add('tagsDragThis');
-
-        } else if( e.type == 'dragenter' ){
-            this.dragTag.toId = el.id;
-            // remove all and add to new entry
-            document.querySelectorAll(`#${this.listID} LI`).forEach(el => el.classList.remove('tagsDragOver'));
-            if( el.id != this.dragTag.fromId ) el.classList.add('tagsDragOver');
-
-        } else if( e.type == 'dragend' ){
-            e.preventDefault(); // no event bubbling, ex. if they grabbed the close-box
-            document.querySelectorAll(`#${this.listID} LI`).forEach(el => el.classList.remove('tagsDragOver'));
-            const fromEl = document.getElementById(this.dragTag.fromId);
-            fromEl.classList.remove('tagsDragThis');
-            if( this.dragTag.toId && this.dragTag.toId != this.dragTag.fromId ) { //drop must be in the basic area of the tags else ignore (&& e.offsetY > -30 && e.offsetY < 90)
-                const toRect = document.getElementById(this.dragTag.toId).getClientRects()[0];
-                if( Math.abs((e.clientX+window.scrollX)-toRect.left)>100 ){ console.log( ` x DROP IGNORED: too far away tag on X-axis (${toRect.left},${toRect.top}) drop(${e.clientX+window.scrollX},${e.clientY})`); return; }
-                const fromNode = fromEl.cloneNode(true); 
-                fromEl.remove();
-                document.getElementById(this.dragTag.toId).insertAdjacentElement("beforebegin", fromNode);
-                // rebuild tag list from new DOM placements
-                this.#buildTagsFromDOM();
-            }
-        }
-    }
-
-    // public methods ---------------------------------------------------------------------------------
-
-    // undo all the Input-Tags changes
-    destroy() {
-        this.inputEl.removeEventListener(this.specialKeys ? "keydown" : "keyup", this.#handleInput);
-        document.removeEventListener(`__${this.listID}_`, this.#handleTagEvent);
-        if( this.tags.length<1 ) this.listEl.classList.remove("tagsList");
-        this.listEl.innerHTML = this.tags.map(tag =>`<li>${this.#encodeHTMLEntities(tag)}</li>`).join(''); // allow the list items to remain
-        if (this.searchItems.length > 0) {
-            this.inputEl.removeEventListener("keyup", this.#handleAutoCompleteList);
-            if (this.searchListEl) this.searchListEl.remove();
-        }
-        if (this.drag){
-            this.listEl.removeEventListener("dragstart", this.#handleTagDrag);
-            this.listEl.removeEventListener("dragenter", this.#handleTagDrag);
-            this.listEl.removeEventListener("dragover", this.#handleTagDrag);
-            this.listEl.removeEventListener("dragend", this.#handleTagDrag);
-        }
-        this.inputEl = null;
-        this.listEl = null;
-        this.searchListEl = null;
-    }
-
-    // manually adjust output field, perhaps within afterUpdate() hook
-    adjustOutput(_tags=[]){
-        const outputEl = document.getElementById(this.outputId);
-        if( outputEl  ) outputEl.value = _tags.filter(_tag => _tag !== '').join(this.delimiter);            
+    #onInput(e) {
+        let value = e.target.value;
+        if (this.opts.onInput)
+            // onInput can override/adjust values
+            e.target.value = this.opts.onInput(value);
+        this.showAutocomplete(value.trim());
     }
     
-    getTags() {
-        return this.tags;
+
+    #onKeydown(e) {
+        let value = this.input.value.trim();
+        // special inputs allowed, so we re-route them to onInput early (on keypress-down!)
+        if (this.opts.onInput && this.opts.allowCustomKeys) {
+            this.opts.onInput(value, e)    
+            return
+        }
+
+        // else normal key handling ...
+
+        // Backspace on empty input -> delete last tag
+        if (e.key === 'Backspace' && !value && this.tags.length) {
+            e.preventDefault();
+            this.deleteTag(this.tags.length - 1);
+            return;
+        }
+
+        // Enter/Comma -> add tag
+        const shouldAdd = 
+            e.key === 'Enter' || 
+            (!this.opts.allowSpaces && e.key === ',') ||
+            (this.opts.allowSpaces && e.key === ' ' && value.includes(','));
+
+        if (shouldAdd && value) {
+            e.preventDefault();
+            this.addTag(value);
+            this.input.value = '';
+            this.hideAutocomplete();
+        }
     }
 
-    addTag(tags, initLoad=false) {
-        // rebuild tags list firstfrom DOM; in case modified somewhere
-        this.#buildTagsFromDOM(false);
+    showAutocomplete(value) {
+        if (!this.opts.autocomplete.length || !value) {
+        this.hideAutocomplete();
+        return;
+        }
 
-        let _html = '', _error = '';
-        tags.split(this.delimiter).forEach(tag => {
-            if( !initLoad && this.maxTags && this.tags.length >= this.maxTags ){ 
-                console.log( ` x maxTags(${this.maxTags}) reached: ignoring tag '${tag}'`); 
-                _error = 'MaxTags Reached';
+        const matches = this.opts.autocomplete
+        .filter(tag => 
+            tag.toLowerCase().includes(value.toLowerCase()) &&
+            !this.tags.includes(tag)
+        )
+        .slice(0, 8);
 
-            }  else {
-                tag = tag.trim();
-                if( tag != '' && (!this.unique || !this.tags.includes(tag)) ){
-                    this.tags.push(tag);
-                    this.tagCnt++; // each new entry new cnt, so always unique
-                    const elementID = this.listID + '_' + this.tagCnt;
-                    // htmlEntities on html; and escape ' for data-item in case messages structure
-                    _html += `<li id='${elementID}' data-item='${this.#escapeQuotes(tag)}'`
-                            +` ${this.drag ? "draggable='true' " : ''}>${this.#encodeHTMLEntities(tag)} `
-                            +`<span onclick="_tagAction('remove','${this.listID}','','${elementID}')">X</span></li>`;
-                }
+        if (!matches.length) {
+            this.hideAutocomplete();
+            return;
+        }
+
+        const ul = document.createElement('ul');
+        matches.forEach(tag => {
+        const li = document.createElement('li');
+        li.textContent = tag;
+        li.addEventListener('click', () => {
+                this.addTag(tag);
+                this.input.value = '';
+                this.hideAutocomplete();
+            }, 
+            { signal: this.abortController.signal });
+            ul.appendChild(li);
+        });
+
+        this.autocomplete.innerHTML = '';
+        this.autocomplete.appendChild(ul);
+        this.autocomplete.style.display = 'block';
+    }
+
+    hideAutocomplete() {
+        this.autocomplete.style.display = 'none';
+    }
+
+    #onPointerDown(e) {
+        const li = e.target.closest('li');
+        if (!li || !li.dataset.tag) return; // Only drag tag elements
+
+        // Don't start drag if clicking on delete button
+        if (e.target.tagName === 'SPAN') return;
+
+        e.preventDefault();
+
+        this.dragData = {
+            el: li,
+            startIndex: [...this.list.children].indexOf(li),
+        };
+
+        li.classList.add('tagsDragThis');
+
+        // insert placeholder where cursor is to allow queuing in placement
+        li.before(this.placeholder);
+
+        this.dragAbortController?.abort();
+        this.dragAbortController = new AbortController();
+
+        document.addEventListener('pointermove',this.#onPointerMove.bind(this),
+            { signal: this.dragAbortController.signal });
+
+        document.addEventListener('pointerup',this.#onPointerUp.bind(this),
+            { signal: this.dragAbortController.signal, once: true });
+
+        // sometimes if scrolling on mobile, you won't get pointerup but still touchend
+        document.addEventListener('touchend',this.#onPointerUp.bind(this),
+            { signal: this.dragAbortController.signal, once: true });
+    }
+
+    #onPointerMove(e) {
+        if (!this.dragData) return;
+
+        const target = document
+            .elementFromPoint(e.clientX, e.clientY)
+            ?.closest('li');
+
+        if (
+            !target ||
+            target === this.dragData.el ||
+            target === this.placeholder ||
+            !target.dataset.tag // Only target tag elements
+        ) return;
+
+        this.#clearDropIndicator();
+
+        const rect = target.getBoundingClientRect();
+        const before = e.clientX < rect.left + rect.width / 2;
+
+        this.dragTarget = target;
+        target.classList.add('tagsDragOver');
+
+        this.list.insertBefore(
+            this.placeholder,
+            before ? target : target.nextSibling
+        );
+    }
+
+    #onPointerUp(e) {
+        if (this.dragData) {
+            const { el } = this.dragData;
+            this.list.insertBefore(el, this.placeholder);
+        }
+
+        // clean-up 
+        this.#clearDropIndicator();
+        this.placeholder.remove();
+
+        // make sure tags matches order of list
+        const prevTags = this.tags.join('|')
+        this.tags = []
+        for (const li of this.list.querySelectorAll('li[data-tag]')) {
+            this.tags.push( li.dataset.tag)
+            li.classList.remove('tagsDragThis');
+        }
+
+        // Trigger callbacks for all tags to notify of reordering
+        if (this.opts.onChange && prevTags !== this.tags.join('|')) {
+            this.opts.onChange(this.tags)
+        }
+
+        this.dragAbortController?.abort();
+        this.dragAbortController = null;
+        this.dragData = null;
+        this.input.focus();
+    }
+
+    #clearDropIndicator() {
+        if (this.dragTarget) {
+            this.dragTarget.classList.remove('tagsDragOver');
+            this.dragTarget = null;
+        }
+    }
+
+    #renderDeleteButton(li) {
+        if (!this.opts.allowDelete) return;
+        const span = document.createElement('span');
+        span.classList.add('tagDelete')
+        span.innerHTML = '&times;';
+        span.style.cursor = 'pointer';
+        span.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.#deleteTagEl(li);
+            }, 
+            { signal: this.abortController.signal });
+        li.appendChild(span);
+    }
+
+    #deleteTagEl(li) {
+        const text = li.dataset.tag;
+        // if onDelete we look for return from it to allow delete or not
+        const allowDelete = this.opts.onDelete ? this.opts.onDelete(text) : true
+        if (!allowDelete) return;
+
+        li.remove();
+        const index = this.tags.indexOf(text);
+        if (index > -1){
+            this.tags.splice(index, 1);
+            if( this.opts.onChange ) this.opts.onChange(this.tags);
+        }
+    }
+
+    // Emergency cleanup for stuck drag states
+    #cleanupDragState() {
+        // Remove all drag-related classes from all elements
+        this.list.querySelectorAll('li').forEach(li => {
+            li.classList.remove('tagsDragThis', 'tagsDragOver');
+            if (li.dataset.tag) {
+                li.style.cursor = 'grab';
             }
         });
-        this.listEl.innerHTML += _html;
-        if( _html || _error ) this.#updateOutput(_error);
-    }
 
-    removeTag(elementID) {
-        // as tag-data may not be unique, we use the unique-DOM-id created for entry
-        const elementEl = document.getElementById(elementID);
-        if( !elementEl ) return;
-        elementEl.remove();
-        this.#buildTagsFromDOM();
-    }
-    
-    
-    // == AUTOCOMPLETE CODE ========================================
-    toggleAutoComplete(tags) {
-        if( !this.searchListEl ) return;
-        if( this.searchListEl.style.display == 'none' )
-            this.#handleAutoCompleteList(null,tags)
-        else
-            this.searchListEl.style.display = 'none';
-    }
-
-    #createAutoCompleteElement(inputId) {
-        // create search list `ul` element and set to `this.searchListEl`
-        const spanEl = document.createElement('span');
-        const inputEl = document.getElementById(inputId);
-        spanEl.className = 'tagsAutocompleteList';
-        inputEl.parentNode.insertBefore(spanEl, inputEl); // Insert the <span> before the input
-        spanEl.appendChild(inputEl); // Move the input inside the <span>
-        const elName = this.listID + '_autocomplete';
-        const html = `<ul id='${elName}' style='display: none'></ul>`;
-        spanEl.insertAdjacentHTML('beforeend', html);
-        this.searchListEl = document.getElementById(elName);
-    }
-
-    #handleAutoCompleteList(e, _q='') {
-        // on keyup so after key actions complete
-        const q = _q || e.target.value.trim();
-        let results = [];
-        if( q.length>1 ){
-            results = this.searchItems.filter(item => item.toLowerCase().indexOf(q.toLowerCase()) != -1);
-            const _html = results.map(tag => `<li onclick="_tagAction('add','${this.listID}','${this.#escapeQuotes(tag,true)}')">${this.#encodeHTMLEntities(tag)}</li>` ).join('');
-            this.searchListEl.innerHTML = _html;
+        // Remove placeholder if it exists in DOM
+        if (this.placeholder.parentNode) {
+            this.placeholder.remove();
         }
-        this.searchListEl.style.display =( q.length>1 && results.length>0 ? 'block' : 'none' );
+
+        // Reset all drag-related variables
+        this.dragAbortController?.abort();
+        this.dragAbortController = null;
+        this.dragData = null;
+        this.dragTarget = null;
     }
 
-} // END of class: TagsInput
+    // Public API -----------------
+    deleteTag(index) {
+        const tagElements = this.list.querySelectorAll('li[data-tag]');
+        const li = tagElements[index];
+        if (li) this.#deleteTagEl(li);
+    }
 
+    // adds a tag, or turns an LI element into a tag to use
+    addTag(text, _li) {
+        if (!text || (!this.opts.allowDuplicates && this.tags.includes(text))) return;
+        
+        // if onAdd, it may adjust, change, or prevent certain text
+        if (this.opts.onAdd && !_li)
+            text = this.opts.onAdd(text)
+        if (!text) return;
 
-// DOM accessible function (injected into HTML)
-function _tagAction(action, listID, tags=[], elementID='') {
-    let eventDetails = {
-        bubbles: true, 
-        cancelable: true, 
-        detail: { action, tags, elementID }
-    };
-    const event = new CustomEvent(`__${listID}_`, eventDetails);
-    document.dispatchEvent(event);
+        const li = _li || document.createElement('li');
+        li.textContent = text;
+        li.dataset.tag = text; // For fast lookup
+        li.setAttribute('role', 'listitem');
+        li.setAttribute('tabindex', '0');
+        li.style.cursor = 'grab'; // Indicate draggable
+
+        if (_li) li.querySelector('span')?.remove(); // Remove old × to re-add cleanly
+        this.#renderDeleteButton(li);
+        if (!_li) this.list.appendChild(li); // if not passed in LI, we ADD it!
+        this.tags.push(text);
+
+        if( this.opts.onChange ) this.opts.onChange(this.tags);
+    }
+
+    getTags() { return [...this.tags]; }
+
+    setTags(tags) {
+        this.tags = [];
+        // Clear only tag elements, keep non-tag elements
+        this.list.querySelectorAll('li[data-tag]').forEach(li => li.remove());
+        tags.forEach(tag => this.addTag(tag));
+    }
+    
+    // Manual cleanup for stuck drag states
+    resetDragState() {
+        this.#cleanupDragState();
+    }
+    
+    destroy() {
+        this.#cleanupDragState(); // Clean up any drag states first
+        this.abortController.abort();
+        this.list?.remove();
+        this.autocomplete?.remove();
+    }
 }
-// Expose function to HTML
-window._tagAction = _tagAction;

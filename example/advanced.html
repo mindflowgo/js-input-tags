@@ -18,27 +18,79 @@
         <div class="mb-3">
             <p class="mb-2">Tag List:</p>
             <!-- specify the ul LIST element to show the tags -->
-            <ul id="tagsList"></ul>
+            <ul id="myList" class="tagsList"></ul>
             <!-- include the input box to input the tags -->
              <small><i>Type something and press Enter, try 'uni' for autocomplete list; or when input blank, try arrow keys;</i></small>
-            <input type="text" id="tagsInput" class="form-control mt-2" spellcheck="false" placeholder="Enter a tag" />
+            <input value="" type="text" id="tagsInput" class="form-control mt-2" spellcheck="false" placeholder="Enter a tag" />
         </div>
             
         <div class="mb-3">
             <p class="mb-2">List results: <strong><span id="tagsData"></span></strong></p>
             <div class="mt-5 d-grid gap-2 d-md-flex">
                 <button class="btn btn-secondary ms-md-2" onClick="btnAddTag('hello')">Add Tag 'hello'</button>
-                <button class="btn btn-secondary ms-md-2" onClick="showList('uni')">Show AutoComplete (for 'uni')</button>
+                <button class="btn btn-secondary ms-md-2" onClick="showList('apple')">Show AutoComplete (for 'apple')</button>
             </div>
         </div>
         
-        <input type="text" id="tagsOutput" class="form-control mt-2" spellcheck="false" placeholder="Enter a tag" />
+        <input type="text" disabled id="tagsOutput" spellcheck="false" placeholder="(empty)" style="color: grey; width: 100%; border:0px;" />
     </div>
 
      <!--Simple tags input implementation-->
      <script type="module">
-        // import InputTags from "./index.js"
-        import InputTags from "https://unpkg.com/js-input-tags@latest"
+        import InputTags from "../src/index.js"
+        // import InputTags from "https://unpkg.com/js-input-tags@latest"
+
+        // use with allow
+        let specialKeysPressed = {}
+        function customKeyHandling(value,e) {
+            e.preventDefault();
+
+            let key = e.key;
+            // map any special keys we want symbols to appear for, remap here
+            const symbolMap = {  ArrowLeft: "←",  ArrowUp: "↑", ArrowRight: "→", ArrowDown: "↓"}
+            if( symbolMap[key] ) key = symbolMap[key]
+                
+            if( !inputEl.value && key === 'Shift' ){
+                // we don't want showing shift if first press as it's usually to uppercase a letter
+            } else if( key === 'Enter' ){
+                // now submit keypresses queued into a tag
+                e.preventDefault();
+                inputTags.addTag(value || 'Enter'); //submit the key sequence or if none, just 'Enter'
+                inputEl.value = "";
+                specialKeysPressed = {}
+            } else {
+                // track special keys so they are prepended & only allowed once
+                if (['Control','Meta','Alt'].includes(key)) {
+                    if (specialKeysPressed[key]){ console.log( `repeated ${key}, skipping`); return; }
+                    specialKeysPressed[key] = true
+                }
+
+                if (specialKeysPressed[key])
+                    inputEl.value = key + (inputEl.value.length>0 ? '+' : '') + inputEl.value;
+                else
+                    inputEl.value += (inputEl.value.length>0 ? '+' : '') + key;
+            }
+            return false;
+        }
+
+        function onInput(value) {
+            // replace certain characters
+            return value.replace('!','*0*');
+        }
+
+        function onAdd(value) {
+            if (value === 'sad') value = 'happy'; // change it!
+            if (value === 'secret') value = ''; // disallow adding
+            // allow the add to happen
+            console.log( `[onAdd] value(${value})`)
+            return value;
+        }
+        function onDelete(value) {
+            if (value === 'stuck') return false;
+            
+            // allow delete to happen
+            return true;
+        }
 
         function displayTags( _tags ){
             console.log( `[displayTags] called, with tags: ${_tags}` );
@@ -55,18 +107,21 @@
 
         const defaultTags = ['default','tags'];
 
-        const myTags = new InputTags({ 
-			inputId: "tagsInput", listId: "tagsList", outputId: "tagsOutput",
-			tags: defaultTags, specialKeys: true, delimiter: ';', unique: true, drag: true, mouse: true, maxTags: 10,
-            afterUpdate: displayTags,
-            // pro-actively process the tags to change format
-            // afterUpdate: function(outputVal){ let tags = outputVal.split(this.delimiter); tags.unshift("Prepend"); this.writeTagOutput(tags); displayTags(tags); },
-			autocompleteList: [ "Canada", "India", "Sri Lanka", "United States", "United 'UK' Kingdom", "Vietnam", "Zimbabwe"]
-		});
+        const inputEl = document.getElementById('tagsInput');
+        const inputTags = new InputTags(inputEl, {
+            targetEl: document.getElementById('myList'),
+            autocomplete: ['apple', 'banana', 'cherry', 'pear', 'pineapple'],
+            // allowCustomKeys: true,
+            // onInput: (value,e) => customKeyHandling(value,e),
+            onInput,
+            onAdd,
+            onDelete,
+            onChange: (tags) => document.getElementById('tagsOutput').value = tags?.join(',') || '',
+		    });
 
         // export module functions for DOM
-        window.btnAddTag = btnAddTag;
-        window.showList = showList;
+        window.btnAddTag = (tag) => inputTags.addTag(tag);
+        window.showList = () => inputTags.showAutocomplete('apple');
      </script>
 </body>
 </html>

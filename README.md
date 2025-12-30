@@ -1,9 +1,9 @@
 # js-input-tags
 **Check the CodePen.io [basic example](https://codepen.io/mindflowgo/pen/PwYNQVe); [autocomplete example](https://codepen.io/mindflowgo/pen/MYgyVgg).**
 
-*Project objective: simple but powerful vanilla ES6 javascript (code: 250 lines) input tag generator for any input fields; with auto-completion lists.*
+*Project objective: simple but powerful vanilla ES6 javascript (code: 350 lines) input tag generator for any input fields; with auto-completion lists.*
 
-Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://github.com/rk4bir/simple-tags-input); using his idea and CSS but then rewritten for ES6 and more features. Can record special keys (Meta, Alt, Tab, etc) as key presses.
+Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://github.com/rk4bir/simple-tags-input); using his idea and CSS but then rewritten for ES6 and more features. Can record special keys (Meta, Alt, Tab, MouseLeft, VolumeUp, etc) as key presses.
 
 ## Demo
 *(Go to my github repo to see the demos, this readme does't show them on other locations)*
@@ -18,9 +18,11 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 - **listId**: element-id of UL list element to use (*String*, required)
 - **outputId**: element-id of where to store the generated tag list (ex. hidden input) (*String*)
 - **afterUpdate**: function to call after change to tags (*Function*)
+- **afterEnter**: function to call after enter key pressed to save tags (*Function*)
 - **unique**: require tags to be unique (*Boolean*, default: false)
 - **delimiter**: normally comma to separate items but alternative possible (*Char*, default ',')
 - **drag**: allow re-arranging the tags (*Boolean*, default false)
+- **maxTags**: maximum number of tags to allow entered (*Number*, default unlimited)
 - **specialKeys**: enable tracking special keys (*Boolean*, default false)
 - **mouse**: allow capture of a mouse click as tag (*Boolean*, default false)
 - **autocompleteList**: autocomplete list suggestions (*Array*)
