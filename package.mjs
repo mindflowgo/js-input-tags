@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { argv } from 'process';
 
 // class name we're working
-const Class = 'InputTags'
+const Class = 'Input2Tags'
 
 const input = argv[2];
 const output = argv[3] || input;

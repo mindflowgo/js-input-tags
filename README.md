@@ -1,4 +1,4 @@
-# js-input-tags
+# input-tags
 ## Version 2.01
 **Check the CodePen.io [basic example](https://codepen.io/mindflowgo/pen/PwYNQVe); [autocomplete example](https://codepen.io/mindflowgo/pen/MYgyVgg).**
 
@@ -9,10 +9,12 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 This project is mobile-friendly: but you may want to prevent scrolling of screen depending on your needs.
 
 ## Demo
-*(Go to my github repo to see the demos, this readme does't show them on other locations)*
-![demonstration](./example/media/autocomplete.gif)
+[Demos & Instructions](https://mindflowgo.github.io/input-tags/)
 
-![special-keys](./example/media/special-keys.gif)
+Video illustrations:
+![demonstration](./docs/media/autocomplete.gif)
+
+![special-keys](./docs/media/special-keys.gif)
 
 ## Options
 *Only required tags are inputId*
@@ -52,11 +54,11 @@ That's it!
 #### Step 1 - Include Files (change path to match where they are)
 ```html
     <head>
-        <link rel="stylesheet" href="https://unpkg.com/js-input-tags@latest/style.css">
+        <link rel="stylesheet" href="https://unpkg.com/input-tags@latest/style.css">
     </head>
 
     <script type="module">
-    import InputTags from "https://unpkg.com/js-input-tags@latest"
+    import InputTags from "https://unpkg.com/input-tags@latest"
     </script>
 ```
 
@@ -86,7 +88,7 @@ That's it!
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     
     <!-- Only CSS used by InputTags -->
-    <link rel="stylesheet" href="https://unpkg.com/js-input-tags@latest/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/input-tags@latest/style.css">
 </head>
 
 <body>
@@ -112,7 +114,7 @@ That's it!
 
      <!--Simple tags input implementation-->
      <script type="module">
-        import InputTags from "https://unpkg.com/js-input-tags@latest"
+        import InputTags from "https://unpkg.com/input-tags@latest"
 
         const inputEl = document.getElementById('tagsInput');
         const inputTags = new InputTags(inputEl, {
@@ -138,11 +140,11 @@ That's it!
 #### Step 1 - Include Files (change path to match where they are)
 ```html
     <head>
-        <link rel="stylesheet" href="https://unpkg.com/js-input-tags@latest/style.css">
+        <link rel="stylesheet" href="https://unpkg.com/input-tags@latest/style.css">
     </head>
 
     <script type="module">
-    import InputTags from "https://unpkg.com/js-input-tags@latest"
+    import InputTags from "https://unpkg.com/input-tags@latest"
     </script>
 ```
 
@@ -196,7 +198,7 @@ You can use the 4 hooks to limit characters allow in inputs, prevent certain tag
 ```
 
 ####
-If you modify the javascript in src/index.js, you can build it with npm run build for distribution.
+If you modify the javascript in src/inputtags.js, you can build it with `npm run build` for distribution.
 
 Before forking and spreading another version, please contact the author with a PR if you have improvements 
 you would like. I'd be happy to integrate improvements.
