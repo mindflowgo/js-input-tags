@@ -1,6 +1,6 @@
 {
   "name": "input2tags",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Simple, but powerful vanilla javascript input2tags creator, with autocomplete.",
   "keywords": [
     "input",
@@ -44,7 +44,7 @@
   "bugs": {
     "url": "https://github.com/mindflowgo/input2tags/issues"
   },
-  "homepage": "https://github.com/mindflowgo/input2tags#readme",
+  "homepage": "https://mindflowgo.github.io/input2tags/",
   "devDependencies": {
     "cssnano": "^7.1.2",
     "postcss": "^8.5.6",

@@ -1,5 +1,7 @@
-# input-tags
-## Version 2.01
+# input2tags
+## Version 3.02
+## Supercedes js-input2tags (v2.01)
+
 **Check the CodePen.io [basic example](https://codepen.io/mindflowgo/pen/PwYNQVe); [autocomplete example](https://codepen.io/mindflowgo/pen/MYgyVgg).**
 
 *Project objective: simple but powerful vanilla ES6 javascript (code: 350 lines) input tag generator for any input fields; with auto-completion lists.*
@@ -9,7 +11,7 @@ Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://
 This project is mobile-friendly: but you may want to prevent scrolling of screen depending on your needs.
 
 ## Demo
-[Demos & Instructions](https://mindflowgo.github.io/input-tags/)
+[Demos & Instructions](https://mindflowgo.github.io/input2tags/)
 
 Video illustrations:
 ![demonstration](./docs/media/autocomplete.gif)
@@ -31,7 +33,7 @@ Video illustrations:
 - **onChange**: a function called after change to tags (new tag added, re-arranged, deleted tag)
 
 ## Methods
-*With a valid InputTags() instance you have these methods:*
+*With a valid Input2Tags() instance you have these methods:*
 - **getTags()**: get the list of tags created
 - **setTags([])**: set the list of tags
 - **addTag(tag)**: add a new tag to input tags instance
@@ -44,7 +46,7 @@ Video illustrations:
 There are 3 steps to using it
 1. Include the CSS & JS files (importing it into a script type=module)
 2. Have an empty list (UL) and an input box (INPUT)
-3. Run the function: const inputTags = new InputTags({ inputId: "tagsInput", listId: "tagsList" });
+3. Run the function: const inputTags = new Input2Tags({ inputId: "tagsInput", listId: "tagsList" });
 
 That's it!
 
@@ -54,11 +56,11 @@ That's it!
 #### Step 1 - Include Files (change path to match where they are)
 ```html
     <head>
-        <link rel="stylesheet" href="https://unpkg.com/input-tags@latest/style.css">
+        <link rel="stylesheet" href="https://unpkg.com/input2tags@latest/style.css">
     </head>
 
     <script type="module">
-    import InputTags from "https://unpkg.com/input-tags@latest"
+    import Input2Tags from "https://unpkg.com/input2tags@latest"
     </script>
 ```
 
@@ -73,7 +75,7 @@ That's it!
 
 #### Step 3 - Run Javascript (to initialize INPUT field)
 ```javascript
-    const inputTags = new InputTags({ inputId: "tagsInput", listId: "tagsList" });
+    const inputTags = new Input2Tags({ inputId: "tagsInput", listId: "tagsList" });
 ```
 
 **Quick example html**
@@ -87,8 +89,8 @@ That's it!
     <!-- Bootstrap 5 not used by Input Tags -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     
-    <!-- Only CSS used by InputTags -->
-    <link rel="stylesheet" href="https://unpkg.com/input-tags@latest/style.css">
+    <!-- Only CSS used by Input2Tags -->
+    <link rel="stylesheet" href="https://unpkg.com/input2tags@latest/style.css">
 </head>
 
 <body>
@@ -114,10 +116,10 @@ That's it!
 
      <!--Simple tags input implementation-->
      <script type="module">
-        import InputTags from "https://unpkg.com/input-tags@latest"
+        import Input2Tags from "https://unpkg.com/input2tags@latest"
 
         const inputEl = document.getElementById('tagsInput');
-        const inputTags = new InputTags(inputEl, {
+        const inputTags = new Input2Tags(inputEl, {
             autocomplete: ['apple', 'banana', 'cherry'],
             // initialTags: ['one','two','three'], // pre-populate (1)
             targetEl: document.getElementById('myTagList'), // pre-populate (2)
@@ -140,11 +142,11 @@ That's it!
 #### Step 1 - Include Files (change path to match where they are)
 ```html
     <head>
-        <link rel="stylesheet" href="https://unpkg.com/input-tags@latest/style.css">
+        <link rel="stylesheet" href="https://unpkg.com/input2tags@latest/style.css">
     </head>
 
     <script type="module">
-    import InputTags from "https://unpkg.com/input-tags@latest"
+    import Input2Tags from "https://unpkg.com/input2tags@latest"
     </script>
 ```
 
@@ -162,7 +164,7 @@ an existing list (UL) otherwise it will create one and pre-pend above the INPUT 
 #### Step 3 - Run Javascript (to initialize INPUT field)
 ```javascript
     const inputEl = document.getElementById('tagsInput');
-    const inputTags = new InputTags(inputEl, {
+    const inputTags = new Input2Tags(inputEl, {
         autocomplete: ['apple', 'banana', 'cherry'],
         initialTags: ['one','two','three'], // pre-populate (1)
         // targetEl: document.getElementById('myTagList'), // pre-populate (2)
@@ -178,7 +180,7 @@ You can use the 4 hooks to limit characters allow in inputs, prevent certain tag
 
 ```javascript
     const inputEl = document.getElementById('tagsInput');
-    const inputTags = new InputTags(inputEl, {
+    const inputTags = new Input2Tags(inputEl, {
         targetEl: document.getElementById('myList'),
         autocomplete: ['apple', 'banana', 'cherry', 'pear', 'pineapple'],
         // allowCustomKeys: true,
