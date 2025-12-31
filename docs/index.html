@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Powerful, very extensive javascript input tags system. No dependencies, easy to use with most frameworks." />
+    <title>Input TAGS | Open Source Input Tags Plugin</title>
+
+    <meta property="og:title" content="Input TAGS | Open Source Input Tags Plugin" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mindflowgo.github.io/input-tags" />
+    <meta property="og:image" content="https://raw.githubusercontent.com/mindflowgo/input-tags/refs/heads/master/docs/assets/hero.png" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+
+
+    <style>
+        body { background-color: #0f1113; color: #e9ecef; font-family: 'Inter', sans-serif; }
+        .hero { padding: 30px 0; border-bottom: 1px solid #2d3238; }
+        .logo-img { max-width: 120px; margin-bottom: 20px; }
+        .btn-github { background-color: #24292e; color: white; border: 1px solid #444; }
+        .btn-github:hover { background-color: #333; color: white; }
+        
+        /* Tab Navigation Customization */
+        .nav-pills .nav-link { color: #adb5bd; border: 1px solid transparent; margin-right: 10px; }
+        .nav-pills .nav-link.active { background-color: #0d6efd; color: white; }
+        
+        /* Code & Demo Panels */
+        .content-card { background: #1a1d20; border: 1px solid #2d3238; border-radius: 12px; overflow: hidden; }
+        pre { background: #000; color: #72f1b8; padding: 20px; margin: 0; border-radius: 0; font-size: 0.9rem; height: 100%; }
+        .demo-box { padding: 40px; display: flex; align-items: center; justify-content: center; min-height: 300px; }
+        
+        /* Mock Tag Styles */
+        .tag-input-mock { background: #2d3238; border-radius: 8px; padding: 10px; width: 100%; max-width: 400px; }
+        .badge-tag { background: #0d6efd; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; margin: 3px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <!-- <img src="assets/taglogo.svg" width="128" /> -->
+    <header class="hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7 text-center text-lg-start">
+                <img src="assets/taglogo.webp" alt="Input Tags" class="logo-img"> 
+                <h1 class="display-4 fw-bold">Input TAGS <font size="4">v2.0.1</font></h1>
+                <p class="lead text-secondary">
+                    A mobile-friendly open-source input tag creator. No dependencies, and easy to turn input box fields into tags.
+                </p>
+                <div class="mt-4">
+                    <a href="https://github.com/mindflowgo/input-tags" class="btn btn-github btn-lg px-4 me-2">Github</a>
+                    <a href="#demo" class="btn btn-primary btn-lg px-4">Get Started</a>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="content-card">
+                    <div class="demo-box text-center">
+                        <div class="tag-input-mock">
+                            <span class="badge-tag">#opensource</span>
+                            <span class="badge-tag">#javascript</span>
+                            <span class="badge-tag">#ui-kit</span>
+                            <div class="text-muted mt-2 small">Type something...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container my-5" id="demo">
+    <ul class="nav nav-pills mb-4 justify-content-center" id="pills-tab" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#hashtags">Hashtags</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#categories">Categories</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#skills">Skills</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="hashtags">
+            <div class="row g-0 content-card mb-2">
+                <div class="demo-box">
+                    <div class="text-center">
+                        <h6>Hashtag Demo</h6>
+                        <div class="tag-input-mock mt-3">
+                            <span class="badge-tag">#coding</span> <span class="badge-tag">#2024</span>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+            <div class="row g-0 content-card">
+                <pre class="border border-5 border-primary border-top-0 border-end-0 border-bottom-0 p-0"
+                ><code class="language-javascript hljs" id="code-el">// Hashtag Usage
+const taggo = new TagGo('#input', {
+  prefix: '#',
+  color: 'blue',
+  allowDrag: true
+});
+
+// Output: #web, #dev, #ui
+
+                </code></pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="tag-demo3"></div>
+        <div class="tab-pane fade" id="tag-demo2"></div>
+        <div class="tab-pane fade" id="tag-demo">
+            <div class="row g-0 content-card">
+                <div class="col-md-6 border-end border-secondary border-opacity-25">
+                    <pre><code>// Category Usage
+const taggo = new TagGo('#input', {
+  theme: 'dark-pill',
+  exportType: 'json'
+});</code></pre>
+                </div>
+                <div class="col-md-6 demo-box">
+                    <div class="badge bg-secondary p-2 m-1">Recipes</div>
+                    <div class="badge bg-secondary p-2 m-1">Health</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="py-4 text-center text-secondary small">
+    &copy; 2026 Filipe Laborde. MIT License.
+</footer>
+
+<script type="module" src="assets/demo.js"></script>
+</body>
+</html>

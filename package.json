@@ -1,33 +1,51 @@
 {
-  "name": "js-input-tags",
-  "version": "2.0.1",
+  "name": "input-tags",
+  "version": "3.0.1",
   "description": "Simple, but powerful vanilla javascript input-tags creator, with autocomplete.",
-  "main": "dist/input-tags.min.js",
-  "style": "dist/input-tags.min.css",
-  "directories": {
-    "example": "example"
-  },
-  "scripts": {
-    "build:js": "terser src/index.js -c -m -o dist/input-tags.min.js",
-    "build:css": "postcss src/style.css -u cssnano -o dist/input-tags.min.css",
-    "build": "npm run build:js && npm run build:css"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mindflowgo/js-input-tags.git"
-  },
   "keywords": [
     "input",
     "tags",
     "es6",
-    "autocomplete"
+    "autocomplete",
+    "input-tags",
+    "labels"
   ],
-  "author": "Filipe Laborde-Basto",
+  "author": "Filipe Laborde <fil@rezox.com>",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mindflowgo/js-input-tags/issues"
+  "main": "dist/inputtags.min.js",
+  "style": "dist/inputtags.min.css",
+  "module": "dist/inputtags.esm.min.js",
+  "exports": {
+    ".": {
+      "import": "./dist/inputtags.esm.min.js",
+      "require": "./dist/inputtags.min.js",
+      "default": "./dist/inputtags.min.js"
+    }
   },
-  "homepage": "https://github.com/mindflowgo/js-input-tags#readme",
+  "types": "dist/inputtags.d.ts",
+  "files": [
+    "dist/inputtags.esm.min.js",
+    "dist/inputtags.min.js",
+    "dist/crinputtagsopt.d.ts",
+    "dist/inputtags.min.css",
+    "LICENSE",
+    "README.md"
+  ],
+  "type": "module",
+  "scripts": {
+    "build:js:esm": "terser src/inputtags.js -c -m -o dist/inputtags.esm.min.js",
+    "build:js:classic": "terser src/inputtags.js -c -m -o dist/inputtags.min.js && node package.mjs dist/inputtags.min.js",
+    "build:css": "postcss src/inputtags.css -u cssnano --no-map -o dist/inputtags.min.css",
+    "build": "npm run build:js:esm && npm run build:js:classic && npm run build:css"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mindflowgo/input-tags.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mindflowgo/input-tags/issues"
+  },
+  "homepage": "https://github.com/mindflowgo/input-tags#readme",
   "devDependencies": {
     "cssnano": "^7.1.2",
     "postcss": "^8.5.6",
