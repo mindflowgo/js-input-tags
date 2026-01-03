@@ -1,6 +1,7 @@
-# input2tags
-## Version 3.02
-## Supercedes js-input2tags (v2.01)
+# Input2Tags
+
+## Version 3.1.1
+## Supercedes js-input-tags (v2.01)
 
 **Check the CodePen.io [basic example](https://codepen.io/mindflowgo/pen/PwYNQVe); [autocomplete example](https://codepen.io/mindflowgo/pen/MYgyVgg).**
 
@@ -8,7 +9,7 @@
 
 Based off the inspiration work of [github.com/rk4bir/simple-tags-input](https://github.com/rk4bir/simple-tags-input); using his idea and CSS but then rewritten for ES6 and more features. Can record special keys (Meta, Alt, Tab, MouseLeft, VolumeUp, etc) as key presses.
 
-This project is mobile-friendly: but you may want to prevent scrolling of screen depending on your needs.
+This project is mobile-device friendly.
 
 ## Demo
 [Demos & Instructions](https://mindflowgo.github.io/input2tags/)
@@ -44,9 +45,10 @@ Video illustrations:
 
 ## Usage
 There are 3 steps to using it
-1. Include the CSS & JS files (importing it into a script type=module)
-2. Have an empty list (UL) and an input box (INPUT)
-3. Run the function: const inputTags = new Input2Tags({ inputId: "tagsInput", listId: "tagsList" });
+1. Include the CSS & JS files.
+2a. Have an input box (INPUT) that it will use.
+2b. If no tag list (UL) is given, it will create one above the input box; if you want to place it differently, create your own and pass it in.
+3. Run the function: const inputTags = new Input2Tags(inputEl, { ...options });
 
 That's it!
 
@@ -56,11 +58,13 @@ That's it!
 #### Step 1 - Include Files (change path to match where they are)
 ```html
     <head>
-        <link rel="stylesheet" href="https://unpkg.com/input2tags@latest/style.css">
+        <link rel="stylesheet" href="https://unpkg.com/input2tags@latest/style">
     </head>
 
     <script type="module">
-    import Input2Tags from "https://unpkg.com/input2tags@latest"
+    import Input2Tags from "https://unpkg.com/input2tags@latest?module"
+
+    ( code will go here )
     </script>
 ```
 
@@ -69,13 +73,14 @@ That's it!
 <div>
     <ul id="tagsList"></ul>
     
-    <input type="text" id="tagsInput" spellcheck="false" placeholder="Enter a tag" />
+    <input type="text" id="newTag" spellcheck="false" placeholder="Enter a tag" />
 </div>
 ```
 
 #### Step 3 - Run Javascript (to initialize INPUT field)
 ```javascript
-    const inputTags = new Input2Tags({ inputId: "tagsInput", listId: "tagsList" });
+    const inputEl = document.getElementById('newTag');
+    const inputTags = new Input2Tags(inputEl);
 ```
 
 **Quick example html**
@@ -103,7 +108,7 @@ That's it!
             <ul id="myTagList"><li><strong>List:</strong></li></ul>
             <!-- include the input box to input the tags -->
              <p><i>Type something and press Enter</i></p>
-            <input type="text" id="tagsInput" class="form-control mt-2" spellcheck="false" placeholder="Enter a tag" />
+            <input type="text" id="newTag" class="form-control mt-2" spellcheck="false" placeholder="Enter a tag" />
         </div>
             
         <div class="mb-3">
@@ -118,8 +123,8 @@ That's it!
      <script type="module">
         import Input2Tags from "https://unpkg.com/input2tags@latest"
 
-        const inputEl = document.getElementById('tagsInput');
-        const inputTags = new Input2Tags(inputEl, {
+        const inputEl = document.getElementById('newTag');
+        const input2Tags = new Input2Tags(inputEl, {
             autocomplete: ['apple', 'banana', 'cherry'],
             // initialTags: ['one','two','three'], // pre-populate (1)
             targetEl: document.getElementById('myTagList'), // pre-populate (2)
@@ -127,10 +132,10 @@ That's it!
         });
 
         // show initial tags by adding something
-        setTimeout( ()=>inputTags.addTag('Auto-Add'), 100)
+        setTimeout( ()=>input2Tags.addTag('Auto-Add'), 100)
 
         // export module functions for DOM
-        window.btnAddTag = (tag) => inputTags.addTag(tag);
+        window.btnAddTag = (tag) => input2Tags.addTag(tag);
      </script>
 </body>
 </html>        
@@ -142,11 +147,11 @@ That's it!
 #### Step 1 - Include Files (change path to match where they are)
 ```html
     <head>
-        <link rel="stylesheet" href="https://unpkg.com/input2tags@latest/style.css">
+        <link rel="stylesheet" href="https://unpkg.com/input2tags@latest/style">
     </head>
 
     <script type="module">
-    import Input2Tags from "https://unpkg.com/input2tags@latest"
+    import Input2Tags from "https://unpkg.com/input2tags@latest?module"
     </script>
 ```
 
@@ -155,7 +160,7 @@ Really just having an input box to enter tags is all that is needed. The package
 an existing list (UL) otherwise it will create one and pre-pend above the INPUT box.
 ```html
 <div>
-    <input type="text" id="tagsInput" spellcheck="false" placeholder="Enter a tag" />
+    <input type="text" id="newTag" spellcheck="false" placeholder="Enter a tag" />
 
     <button onClick="btnAddTag('hello')">Add Tag 'hello'</button>
 </div>
@@ -163,7 +168,7 @@ an existing list (UL) otherwise it will create one and pre-pend above the INPUT 
 
 #### Step 3 - Run Javascript (to initialize INPUT field)
 ```javascript
-    const inputEl = document.getElementById('tagsInput');
+    const inputEl = document.getElementById('newTag');
     const inputTags = new Input2Tags(inputEl, {
         autocomplete: ['apple', 'banana', 'cherry'],
         initialTags: ['one','two','three'], // pre-populate (1)
@@ -179,7 +184,7 @@ an existing list (UL) otherwise it will create one and pre-pend above the INPUT 
 You can use the 4 hooks to limit characters allow in inputs, prevent certain tags from being created, or others from being deleted (with these hooks: onInput, onAdd, onDelete)
 
 ```javascript
-    const inputEl = document.getElementById('tagsInput');
+    const inputEl = document.getElementById('newTag');
     const inputTags = new Input2Tags(inputEl, {
         targetEl: document.getElementById('myList'),
         autocomplete: ['apple', 'banana', 'cherry', 'pear', 'pineapple'],

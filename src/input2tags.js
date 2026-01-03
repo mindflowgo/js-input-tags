@@ -20,7 +20,7 @@
  *    onDelete: (tag) => console.log('Deleted:', tag)
  * });
  */
-class Input2Tags {
+export default class Input2Tags {
     constructor(inputEl, opts = {}) {
         this.input = inputEl;   // where the user enters tags
         this.opts = {
@@ -39,8 +39,8 @@ class Input2Tags {
         };
 
         this.tags = [];
-        this.abortController = new AbortController();
-        this.dragAbortController = null;
+        this.abort = new AbortController();
+        this.dragAbort = null;
         this.dragTarget = null;
 
         this.#init();
@@ -80,13 +80,13 @@ class Input2Tags {
         // special keys means ignore normal input handling, let user manage 
         if (!this.opts.allowCustomKeys) 
             this.input.addEventListener('input', this.#onInput.bind(this), { 
-                signal: this.abortController.signal 
+                signal: this.abort.signal 
             });
         this.input.addEventListener('keydown', this.#onKeydown.bind(this), { 
-            signal: this.abortController.signal 
+            signal: this.abort.signal 
         });
         this.list.addEventListener('pointerdown', this.#onPointerDown.bind(this), { 
-            signal: this.abortController.signal 
+            signal: this.abort.signal 
         });
 
         // Load existing tags (from data-tags or initial <li>)
@@ -179,7 +179,7 @@ class Input2Tags {
                 this.input.value = '';
                 this.hideAutocomplete();
             }, 
-            { signal: this.abortController.signal });
+            { signal: this.abort.signal });
             ul.appendChild(li);
         });
 
@@ -211,18 +211,18 @@ class Input2Tags {
         // insert placeholder where cursor is to allow queuing in placement
         li.before(this.placeholder);
 
-        this.dragAbortController?.abort();
-        this.dragAbortController = new AbortController();
+        this.dragAbort?.abort();
+        this.dragAbort = new AbortController();
 
         document.addEventListener('pointermove',this.#onPointerMove.bind(this),
-            { signal: this.dragAbortController.signal });
+            { signal: this.dragAbort.signal });
 
         document.addEventListener('pointerup',this.#onPointerUp.bind(this),
-            { signal: this.dragAbortController.signal, once: true });
+            { signal: this.dragAbort.signal, once: true });
 
         // sometimes if scrolling on mobile, you won't get pointerup but still touchend
         document.addEventListener('touchend',this.#onPointerUp.bind(this),
-            { signal: this.dragAbortController.signal, once: true });
+            { signal: this.dragAbort.signal, once: true });
     }
 
     #onPointerMove(e) {
@@ -276,8 +276,8 @@ class Input2Tags {
             this.opts.onChange(this.tags)
         }
 
-        this.dragAbortController?.abort();
-        this.dragAbortController = null;
+        this.dragAbort?.abort();
+        this.dragAbort = null;
         this.dragData = null;
         this.input.focus();
     }
@@ -299,7 +299,7 @@ class Input2Tags {
             e.stopPropagation();
             this.#deleteTagEl(li);
             }, 
-            { signal: this.abortController.signal });
+            { signal: this.abort.signal });
         li.appendChild(span);
     }
 
@@ -333,8 +333,8 @@ class Input2Tags {
         }
 
         // Reset all drag-related variables
-        this.dragAbortController?.abort();
-        this.dragAbortController = null;
+        this.dragAbort?.abort();
+        this.dragAbort = null;
         this.dragData = null;
         this.dragTarget = null;
     }
@@ -386,9 +386,8 @@ class Input2Tags {
     
     destroy() {
         this.#cleanupDragState(); // Clean up any drag states first
-        this.abortController.abort();
+        this.abort.abort();
         this.list?.remove();
         this.autocomplete?.remove();
     }
 }
-export default Input2Tags;

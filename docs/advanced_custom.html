@@ -7,21 +7,21 @@
     <!-- Bootstrap 5 not used by Input Tags -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <!-- Only CSS used by InputTags -->
-    <!-- <link rel="stylesheet" href="https://unpkg.com/js-input-tags@latest/style.css"> -->
-    <link rel="stylesheet" href="../dist/input-tags.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/input2tags@latest/style">
+    <!-- <link rel="stylesheet" href="../dist/input2tags.min.css"> -->
 </head>
 
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Tags Input with Autocomplete</h1>
+        <h1 class="text-center mb-4">Tags Input - Special Keys</h1>
             
         <div class="mb-3">
             <p class="mb-2">Tag List:</p>
             <!-- specify the ul LIST element to show the tags -->
             <ul id="myList" class="tagsList"></ul>
             <!-- include the input box to input the tags -->
-             <small><i>Type something and press Enter, try 'uni' for autocomplete list; or when input blank, try arrow keys;</i></small>
-            <input value="" type="text" id="tagsInput" class="form-control mt-2" spellcheck="false" placeholder="Enter a tag" />
+             <small><i>Try Esc, Tab, or Arrow Keys;</i></small>
+            <input value="" type="text" id="newTag" class="form-control mt-2" spellcheck="false" placeholder="Enter a tag" />
         </div>
             
         <div class="mb-3">
@@ -37,8 +37,8 @@
 
      <!--Simple tags input implementation-->
      <script type="module">
-        import InputTags from "https://unpkg.com/js-input-tags@latest"
-        import InputTags from "../dist/input-tags.min.js"
+        import Input2Tags from "https://unpkg.com/input2tags@latest?module"
+        // import Input2Tags from "../dist/input2tags.esm.min.js" // if using local
 
         // use with allow
         let specialKeysPressed = {}
@@ -55,7 +55,7 @@
             } else if( key === 'Enter' ){
                 // now submit keypresses queued into a tag
                 e.preventDefault();
-                inputTags.addTag(value || 'Enter'); //submit the key sequence or if none, just 'Enter'
+                input2Tags.addTag(value || 'Enter'); //submit the key sequence or if none, just 'Enter'
                 inputEl.value = "";
                 specialKeysPressed = {}
             } else {
@@ -73,55 +73,21 @@
             return false;
         }
 
-        function onInput(value) {
-            // replace certain characters
-            return value.replace('!','*0*');
-        }
+        const initialTags = ['Alt+x','Ctrl+Alt+Backspace'];
 
-        function onAdd(value) {
-            if (value === 'sad') value = 'happy'; // change it!
-            if (value === 'secret') value = ''; // disallow adding
-            // allow the add to happen
-            console.log( `[onAdd] value(${value})`)
-            return value;
-        }
-        function onDelete(value) {
-            if (value === 'stuck') return false;
-            
-            // allow delete to happen
-            return true;
-        }
-
-        function displayTags( _tags ){
-            console.log( `[displayTags] called, with tags: ${_tags}` );
-            document.querySelector('#tagsData').innerHTML = _tags;
-        }
-
-        function btnAddTag( _tag ){
-            myTags.addTag(_tag);
-        }
-
-        function showList( _tags ){
-            myTags.toggleAutoComplete(_tags);
-        }
-
-        const defaultTags = ['default','tags'];
-
-        const inputEl = document.getElementById('tagsInput');
-        const inputTags = new InputTags(inputEl, {
+        const inputEl = document.getElementById('newTag');
+        const input2Tags = new Input2Tags(inputEl, {
             targetEl: document.getElementById('myList'),
             autocomplete: ['apple', 'banana', 'cherry', 'pear', 'pineapple'],
-            // allowCustomKeys: true,
-            // onInput: (value,e) => customKeyHandling(value,e),
-            onInput,
-            onAdd,
-            onDelete,
+            initialTags,
+            allowCustomKeys: true,
+            onInput: (value,e) => customKeyHandling(value,e),
             onChange: (tags) => document.getElementById('tagsOutput').value = tags?.join(',') || '',
 		    });
 
         // export module functions for DOM
-        window.btnAddTag = (tag) => inputTags.addTag(tag);
-        window.showList = () => inputTags.showAutocomplete('apple');
+        window.btnAddTag = (tag) => input2Tags.addTag(tag);
+        window.showList = () => input2Tags.showAutocomplete('apple');
      </script>
 </body>
 </html>

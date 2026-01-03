@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Powerful, very extensive javascript input tags system. No dependencies, easy to use with most frameworks." />
+  <title>Input2TAGS | Open Source Input Tags Plugin</title>
+
+  <meta property="og:title" content="Input2TAGS | Open Source Input Tags Plugin" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://mindflowgo.github.io/input2tags" />
+  <meta property="og:image" content="https://raw.githubusercontent.com/mindflowgo/input2tags/refs/heads/master/docs/assets/hero.jpg" />
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+      
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/input2tags@latest/style" />
+
+  <style>
+    body { background-color: #0f1113; color: #e9ecef; font-family: 'Inter', sans-serif; }
+    .hero { padding: 30px 0; border-bottom: 1px solid #2d3238; }
+    .logo-img { max-width: 120px; margin-bottom: 20px; }
+    .btn-github { background-color: #24292e; color: white; border: 1px solid #444; }
+    .btn-github:hover { background-color: #333; color: white; }
+    
+    .container-md {
+      max-width: 800px;
+    }
+
+    /* copy buttons */
+    .bg-dark-card {
+      background-color: #1e1e1e;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 0.5rem;
+    }
+    .code-block {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      font-size: 0.9rem;
+    }
+    .card-header {
+      background-color: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      border-radius: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+    .copy-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* Accordion tweaks */
+    .accordion-button {
+      background-color: #1a1d20;
+      color: #e9ecef;
+    }
+    .accordion-button:not(.collapsed) {
+      color: #fff;
+      background-color: #15181b;
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="container-md">
+      <div class="row align-items-center">
+        <div class="col-lg-7 text-center text-lg-start">
+          <img src="https://mindflowgo.github.io/input2tags/assets/taglogo.webp" alt="Input Tags" class="logo-img"> 
+          <h1 class="display-4 fw-bold">Input<span class="text-primary" style="transform:scale(1.6);">2</span>Tags <font size="4">v3.1.1</font></h1>
+          <p class="lead text-secondary">
+            A mobile-friendly open-source input tag creator. No dependencies, and easy to turn input box fields into tags.
+          </p>
+          <div class="mt-4">
+            <a href="https://github.com/mindflowgo/input2tags" class="btn btn-github btn-lg px-4 me-2">
+              <svg style="width: 24px; height: 24px;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"></path></svg>
+              Github</a>
+            <a href="#options" class="btn btn-primary btn-lg px-4">Get Started</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container-md my-5">
+
+    <!-- Options Section -->
+    <section id="options" class="mt-5 pt-3">
+      <h2 class="mb-4">Options</h2>
+      <p class="text-muted">
+        Pass these as the second argument to the <code>Input2Tags</code> constructor.
+      </p>
+
+      <div class="table-responsive">
+        <table class="table table-dark table-striped">
+          <thead>
+            <tr>
+              <th>Option</th>
+              <th style="width: 15%">Type</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>allowDelete</code></td>
+              <td><code>boolean</code></td>
+              <td><code>true</code></td>
+              <td>Allow the [x] delete buttons on tags.</td>
+            </tr>
+            <tr>
+              <td><code>allowDuplicates</code></td>
+              <td><code>boolean</code></td>
+              <td><code>false</code></td>
+              <td>Allow duplicate tag names.</td>
+            </tr>
+            <tr>
+              <td><code>allowSpaces</code></td>
+              <td><code>boolean</code></td>
+              <td><code>false</code></td>
+              <td>Allow spaces in tags (requires comma to submit).</td>
+            </tr>
+            <tr>
+              <td><code>allowCustomKeys</code></td>
+              <td><code>boolean</code></td>
+              <td><code>false</code></td>
+              <td>Handle special keys (Meta, Alt, etc.) via <code>onInput</code>.</td>
+            </tr>
+            <tr>
+              <td><code>autocomplete</code></td>
+              <td><code>string[]</code></td>
+              <td><code>[]</code></td>
+              <td>Array of auto-complete suggestions.</td>
+            </tr>
+            <tr>
+              <td><code>initialTags</code></td>
+              <td><code>string[]</code></td>
+              <td><code>[]</code></td>
+              <td>Initial tags to display on load.</td>
+            </tr>
+            <tr>
+              <td><code>targetEl</code></td>
+              <td><code>HTMLElement | null</code></td>
+              <td><code>null</code></td>
+              <td>Optional UL element to render tags into.</td>
+            </tr>
+            <tr>
+              <td><code>onAdd</code></td>
+              <td><code>(tag: string) => string</code></td>
+              <td><code>null</code></td>
+              <td><b>Function</b>: transform or block tag before adding.</td>
+            </tr>
+            <tr>
+              <td><code>onDelete</code></td>
+              <td><code>(tag: string) => boolean</code></td>
+              <td><code>null</code></td>
+              <td><b>Function</b>: return <code>false</code> to prevent deletion.</td>
+            </tr>
+            <tr>
+              <td><code>onInput</code></td>
+              <td><code>(value: string, event?) => string</code></td>
+              <td><code>null</code></td>
+              <td><b>Function</b>: handle raw input (e.g., special keys).</td>
+            </tr>
+            <tr>
+              <td><code>onChange</code></td>
+              <td><code>(tags: string[]) => void</code></td>
+              <td><code>null</code></td>
+              <td><b>Function</b>: called whenever tags change.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Methods Section -->
+    <section id="methods" class="mt-5 pt-3">
+      <h2 class="mb-4">Methods</h2>
+      <p class="text-muted">
+        Available on an <code>Input2Tags</code> instance.
+      </p>
+
+      <div class="accordion" id="methodsAccordion">
+        <!-- getTags -->
+        <div class="accordion-item bg-dark border-secondary">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-getTags">
+              getTags()
+            </button>
+          </h2>
+          <div id="collapse-getTags" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <p class="text-muted mb-3">Returns the current list of tags.</p>
+              <div class="bg-dark-card p-3 rounded mb-2">
+                <pre class="code-block mb-0"><code>const tags = input2Tags.getTags();
+// → ['apple', 'banana']</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- setTags -->
+        <div class="accordion-item bg-dark border-secondary">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-setTags">
+              setTags(tags)
+            </button>
+          </h2>
+          <div id="collapse-setTags" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <p class="text-muted mb-3">Replace all tags with a new array.</p>
+              <div class="bg-dark-card p-3 rounded mb-2">
+                <pre class="code-block mb-0"><code>input2Tags.setTags(['cherry', 'date']);</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- addTag -->
+        <div class="accordion-item bg-dark border-secondary">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-addTag">
+              addTag(tag)
+            </button>
+          </h2>
+          <div id="collapse-addTag" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <p class="text-muted mb-3">Add a new tag to the list.</p>
+              <div class="bg-dark-card p-3 rounded mb-2">
+                <pre class="code-block mb-0"><code>input2Tags.addTag('elderberry');</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- deleteTag -->
+        <div class="accordion-item bg-dark border-secondary">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-deleteTag">
+              deleteTag(index)
+            </button>
+          </h2>
+          <div id="collapse-deleteTag" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <p class="text-muted mb-3">Remove a tag by its index.</p>
+              <div class="bg-dark-card p-3 rounded mb-2">
+                <pre class="code-block mb-0"><code>input2Tags.deleteTag(0); // removes first tag</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- showAutocomplete -->
+        <div class="accordion-item bg-dark border-secondary">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-showAutocomplete">
+              showAutocomplete(query)
+            </button>
+          </h2>
+          <div id="collapse-showAutocomplete" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <p class="text-muted mb-3">Manually show autocomplete matches.</p>
+              <div class="bg-dark-card p-3 rounded mb-2">
+                <pre class="code-block mb-0"><code>input2Tags.showAutocomplete('app');</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- hideAutocomplete -->
+        <div class="accordion-item bg-dark border-secondary">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-hideAutocomplete">
+              hideAutocomplete()
+            </button>
+          </h2>
+          <div id="collapse-hideAutocomplete" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <p class="text-muted mb-3">Hide the autocomplete dropdown.</p>
+              <div class="bg-dark-card p-3 rounded mb-2">
+                <pre class="code-block mb-0"><code>input2Tags.hideAutocomplete();</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- destroy -->
+        <div class="accordion-item bg-dark border-secondary">
+          <h2 class="accordion-header">
+            <button class="accordion-button collapsed text-white fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-destroy">
+              destroy()
+            </button>
+          </h2>
+          <div id="collapse-destroy" class="accordion-collapse collapse">
+            <div class="accordion-body">
+              <p class="text-muted mb-3">Clean up instance and remove DOM elements.</p>
+              <div class="bg-dark-card p-3 rounded mb-2">
+                <pre class="code-block mb-0"><code>input2Tags.destroy();</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="text-center my-5">
+        <a href="javascript:history.back()" class="btn btn-lg btn-outline-secondary px-5 py-3 fw-bold">
+            <i class="bi bi-arrow-left me-2"></i>
+            Back
+        </a>
+    </div>
+
+  </main>
+
+  <footer class="d-flex flex-wrap justify-content-between align-items-center mx-2 py-3 border-top border-secondary">
+    <div class="d-flex d-none d-md-flex align-items-center">
+      <i class="bi bi-box me-2 text-muted"></i>
+      <h6 class="text-light mb-0">Input<b class="text-primary">2</b>Tags</h6>
+    </div>
+    
+    <div class="d-flex sm:w-100 flex-wrap justify-content-center gap-4">
+      <a href="https://github.com/mindflowgo/input2tags" target="_blank" class="text-decoration-none d-flex align-items-center">
+        <i class="bi bi-github me-1 text-muted"></i>
+        <span class="text-light">GitHub</span>
+      </a>
+      <a href="https://mindflowgo.github.io/input2tags/" class="text-decoration-none d-flex align-items-center">
+        <i class="bi bi-book me-1 text-muted"></i>
+        <span class="text-light">Demos</span>
+      </a>
+      <a href="https://www.npmjs.com/package/input2tags" target="_blank" class="text-decoration-none d-flex align-items-center">
+        <i class="bi bi-box-seam me-1 text-muted"></i>
+        <span class="text-light">NPM</span>
+      </a>
+    </div>
+    
+    <div class="w-100 d-md-none text-center mt-2">
+      <small class="text-muted">Released under the MIT License</small>
+    </div>
+    <div class="d-none d-md-block">
+      <small class="text-muted">Released under the MIT License</small>
+    </div>
+  </footer>
+
+  <script>
+    function copyText(event, id) {
+      const text = document.getElementById(id).textContent.trim();
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target.closest('.copy-btn');
+        const icon = btn.querySelector('i');
+        icon.className = 'bi bi-check text-success';
+        setTimeout(() => icon.className = 'bi bi-clipboard', 1500);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      hljs.highlightAll();
+    });
+    
+    
+    document.addEventListener('click', (e) => {
+    // Find clicked accordion button
+    const button = e.target.closest('.accordion-button');
+    if (!button) return;
+
+    const collapse = button.closest('.accordion-item').querySelector('.accordion-collapse');
+    const isExpanded = button.getAttribute('aria-expanded') === 'true';
+
+    // Toggle state
+    button.setAttribute('aria-expanded', !isExpanded);
+    collapse.classList.toggle('show', !isExpanded);
+    });
+
+  </script>
+</body>
+</html>

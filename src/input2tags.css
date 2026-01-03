@@ -3,7 +3,9 @@
     flex-wrap: wrap;
     border: none;
     padding-left: 0px;
-}
+    touch-action: none; /* Prevents zoom/scroll during drag */
+    user-select: none;  /* Prevents text selection */
+} 
 .tagsList LI {
     position: relative;
     color: #333;
